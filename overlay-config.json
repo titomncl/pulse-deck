@@ -1,0 +1,71 @@
+{
+  "rotationDuration": 5000,
+  "transitionAnimation": "fadeSlide",
+  "colors": {
+    "panelBackground": "#F3F3F3",
+    "panelBorder": "#002740",
+    "primaryText": "#002740",
+    "secondaryText": "#666666",
+    "progressBarBackground": "#E0E0E0",
+    "progressBarFill": "#002740",
+    "progressBarFillEnd": "#004d73",
+    "accentColor": "#9146ff"
+  },
+  "youtubeChannel": {
+    "url": "",
+    "latestVideoTitle": "Latest Stream Highlights",
+    "latestVideoDate": "10/12/2025"
+  },
+  "chatCommands": [
+    {
+      "name": "!discord",
+      "description": "Join our Discord server",
+      "emote": "discord.png"
+    },
+    {
+      "name": "!vod",
+      "description": "Watch latest stream",
+      "emote": "vod.png"
+    }
+  ],
+  "elements": {
+    "followerGoal": {
+      "enabled": true,
+      "goal": 200,
+      "current": 0,
+      "zIndex": 1,
+      "title": "Follower Goal",
+      "emote": "follower.png"
+    },
+    "subscriberGoal": {
+      "enabled": true,
+      "goal": 500,
+      "current": 0,
+      "zIndex": 2,
+      "title": "Subscriber Goal",
+      "emote": "subscriber.png"
+    },
+    "donations": {
+      "enabled": true,
+      "zIndex": 3,
+      "title": "Total Donations",
+      "emote": "donation.png"
+    },
+    "chatCommands": {
+      "enabled": true,
+      "maxCommandsToShow": 3,
+      "zIndex": 4
+    },
+    "latestVOD": {
+      "enabled": true,
+      "zIndex": 5,
+      "title": "Latest VOD",
+      "emote": "🎬"
+    }
+  },
+  "goalAnimations": {
+    "enabled": true,
+    "type": "confetti",
+    "duration": 3000
+  }
+}

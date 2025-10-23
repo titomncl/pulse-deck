@@ -1,0 +1,215 @@
+.overlay-element {
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Animations */
+.fadeIn {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.slideIn {
+  animation: slideIn 0.5s ease-out;
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Goal reached animation */
+.overlay-element.goal-reached {
+  animation: goalReached 0.6s ease-in-out;
+}
+
+@keyframes goalReached {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1) rotate(2deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(-2deg);
+  }
+}
+
+/* Goal content */
+.goal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.goal-header {
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 1.2em;
+}
+
+.goal-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.goal-bar {
+  width: 100%;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.goal-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 12px;
+}
+
+.goal-text {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+/* Donation content */
+.donation-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.donation-header {
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 1.2em;
+}
+
+.donation-amount {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+/* Commands content */
+.commands-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.commands-header {
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 1.2em;
+  border-bottom: 2px solid currentColor;
+  padding-bottom: 8px;
+}
+
+.commands-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.command-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.command-name {
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+.command-desc {
+  opacity: 0.8;
+  font-size: 0.9em;
+}
+
+.no-commands {
+  text-align: center;
+  opacity: 0.6;
+  padding: 20px;
+}
+
+/* VOD content */
+.vod-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.vod-thumbnail {
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.vod-thumbnail img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.vod-info {
+  flex: 1;
+}
+
+.vod-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vod-date {
+  opacity: 0.7;
+  font-size: 0.9em;
+}
+
+.no-vod {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  opacity: 0.6;
+}

@@ -1,0 +1,368 @@
+/* Slanted Panel Component */
+.slanted-panel-container {
+  background: transparent;
+  width: 100%;
+  height: auto;
+  padding: 0;
+  margin-bottom: 16px;
+}
+
+.slanted-panel {
+  /* Minimum dimensions - can grow with content but stays steady during transitions */
+  min-width: 700px;
+  min-height: 220px;
+  width: fit-content;
+  height: fit-content;
+  max-width: 100%;
+  
+  /* Diamond/Losange shape - parallelogram with rounded corners */
+  background: #F3F3F3; /* Light grey background */
+  border: 6px solid #002740; /* Dark navy blue border */
+  border-radius: 24px; /* Smooth rounded corners */
+  transform: skewX(-8deg); /* Slant/diamond effect */
+  
+  /* Layout */
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  
+  /* Effects */
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 39, 64, 0.1);
+}
+
+.slanted-panel:hover {
+  box-shadow: 0 8px 16px rgba(0, 39, 64, 0.15);
+}
+
+/* Un-skew the content inside so text/elements appear normal */
+.slanted-panel > * {
+  transform: skewX(8deg);
+}
+
+/* Left emote area */
+.panel-left-well {
+  width: 220px;
+  min-width: 220px;
+  max-width: 220px;
+  height: 100%;
+  padding: 24px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.panel-emote {
+  display: block;
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: contain;
+  font-size: 80px;
+  line-height: 1;
+  text-align: center;
+}
+
+.panel-emote-placeholder {
+  width: 80px;
+  height: 80px;
+  background: #F3F3F3;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+}
+
+/* Divider */
+.panel-divider {
+  width: 3px;
+  background: #002740;
+  align-self: stretch;
+  margin: 20px 16px;
+  opacity: 1;
+  flex-shrink: 0;
+}
+
+/* Right content area */
+.panel-right-content {
+  flex: 1;
+  height: 100%;
+  padding: 24px 32px 24px 16px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.panel-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #002740;
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+}
+
+.panel-content-body {
+  flex: 1;
+  color: #002740;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.panel-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0 0 0;
+  opacity: 0.8;
+}
+
+/* Responsive styles */
+@media (max-width: 900px) {
+  .slanted-panel {
+    min-width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .slanted-panel {
+    min-width: 95%;
+    min-height: 200px;
+    transform: skewX(-6deg); /* Less skew on smaller screens */
+  }
+  
+  .slanted-panel > * {
+    transform: skewX(6deg);
+  }
+  
+  .panel-left-well {
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+    padding: 16px;
+  }
+
+  .panel-emote {
+    max-width: 70px;
+    max-height: 70px;
+    font-size: 60px;
+  }
+
+  .panel-right-content {
+    padding: 16px 20px 16px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .slanted-panel {
+    flex-direction: column;
+    min-height: 280px;
+    min-width: 90%;
+    transform: skewX(-4deg); /* Even less skew on mobile */
+  }
+  
+  .slanted-panel > * {
+    transform: skewX(4deg);
+  }
+  
+  .panel-left-well {
+    width: 100%;
+    max-width: 100%;
+    min-height: 120px;
+    padding: 16px;
+  }
+  
+  .panel-divider {
+    width: calc(100% - 40px);
+    height: 3px;
+    margin: 0 20px;
+    align-self: auto;
+  }
+  
+  .panel-right-content {
+    width: 100%;
+    padding: 16px 20px;
+    flex: 1;
+  }
+}
+
+/* Progress bar for goals */
+.panel-progress-bar {
+  width: 100%;
+  height: 32px;
+  background: #E0E0E0;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 8px 0;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.panel-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #002740 0%, #004d73 100%);
+  transition: width 0.5s ease;
+  border-radius: 16px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+/* Container for both text layers */
+.panel-progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 700;
+  font-size: 15px;
+  color: #002740;
+  z-index: 2;
+  pointer-events: none;
+  width: 100%;
+  text-align: center;
+}
+
+/* White text overlay (only visible on filled portion) */
+.panel-progress-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: #ffffff;
+  z-index: 3;
+  width: 100%;
+  text-align: center;
+  clip-path: polygon(
+    0 0,
+    var(--progress-width, 0%) 0,
+    var(--progress-width, 0%) 100%,
+    0 100%
+  );
+  transition: clip-path 0.5s ease;
+}
+
+/* Command list */
+.panel-command-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.panel-command-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: #F3F3F3;
+  border-radius: 6px;
+  transition: background 0.2s;
+  gap: 12px;
+}
+
+.panel-command-item:hover {
+  background: #e8e8e8;
+}
+
+.panel-command-name {
+  font-weight: 700;
+  color: #002740;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.panel-command-desc {
+  color: #666;
+  font-size: 13px;
+  text-align: right;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Single command display (for carousel) */
+.panel-single-command {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panel-command-description {
+  font-size: 18px;
+  font-weight: 600;
+  color: #002740;
+  line-height: 1.4;
+}
+
+.panel-command-subtext {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+/* VOD thumbnail */
+.panel-vod-thumbnail {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  max-height: 120px;
+}
+
+.panel-vod-thumbnail img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.panel-vod-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel-vod-title {
+  font-weight: 600;
+  color: #002740;
+  font-size: 15px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.panel-vod-date {
+  font-size: 13px;
+  color: #666;
+}
+
+/* Animation for goal reached */
+@keyframes goalCelebration {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.05) rotate(1deg); }
+  75% { transform: scale(1.05) rotate(-1deg); }
+}
+
+.slanted-panel.goal-reached {
+  animation: goalCelebration 0.6s ease-in-out;
+}
+
+.slanted-panel.goal-reached .panel-progress-fill {
+  background: linear-gradient(90deg, #00a86b 0%, #00d084 100%);
+}

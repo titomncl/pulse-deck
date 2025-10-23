@@ -1,0 +1,74 @@
+.info-panel {
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+/* Animations */
+.fadeIn {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.slideIn {
+  animation: slideIn 0.5s ease-out;
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+/* Donation display */
+.donation-amount-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.donation-currency {
+  font-size: 28px;
+  font-weight: 700;
+  color: #002740;
+}
+
+.donation-number {
+  font-size: 42px;
+  font-weight: 800;
+  color: #002740;
+  line-height: 1;
+}
+
+.no-commands,
+.no-vod {
+  text-align: center;
+  color: #999;
+  padding: 16px;
+  font-style: italic;
+}
