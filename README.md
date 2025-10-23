@@ -31,24 +31,15 @@
 npm install
 ```
 
-### 2. Configure Environment (Optional)
-Create a `.env` file to customize settings:
-```env
-PORT=3000
-WS_PORT=3001
-TWITCH_CLIENT_ID=your_client_id_here
-TWITCH_CLIENT_SECRET=your_secret_here
-```
-
-### 3. Start Server
+### 2. Start Server
 ```bash
 npm start
 ```
 
-### 4. Configure Your Overlay
+### 3. Configure Your Overlay
 Open `http://localhost:3000/customize` in your browser
 
-### 5. Add to OBS
+### 4. Add to OBS
 1. Click "🔗 Generate OBS URL" in the customize page
 2. Add **Browser Source** in OBS
 3. Paste the generated URL
@@ -500,25 +491,6 @@ CSS:
 | `twitch.vods` | Latest VOD info | Twitch API credentials |
 | `config.chatCommands` | Command list from config | None |
 | `custom.donations` | External donation tracking | API integration |
-
-### Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# Server Configuration
-PORT=3000
-WS_PORT=3001
-NODE_ENV=production
-
-# Twitch API (Optional - can also configure in UI)
-TWITCH_CLIENT_ID=your_client_id_here
-TWITCH_CLIENT_SECRET=your_client_secret_here
-
-# Security (Optional)
-SESSION_SECRET=random_string_here
-CORS_ORIGIN=http://localhost:3000
-```
 
 ---
 
