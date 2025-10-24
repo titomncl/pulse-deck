@@ -1,9 +1,27 @@
-{
-  "emotes": [
-    "discord.png",
-    "donation.png",
-    "follower.png",
-    "subscriber.png",
-    "vod.png"
-  ]
-}
+[
+  {
+    "filename": "follower.png",
+    "name": "follower",
+    "addedAt": "2025-10-24T12:44:42.343Z"
+  },
+  {
+    "filename": "discord.png",
+    "name": "discord",
+    "addedAt": "2025-10-24T12:49:41.536Z"
+  },
+  {
+    "filename": "donation.png",
+    "name": "donation",
+    "addedAt": "2025-10-24T12:52:45.807Z"
+  },
+  {
+    "filename": "subscriber.png",
+    "name": "subscriber",
+    "addedAt": "2025-10-24T12:52:45.818Z"
+  },
+  {
+    "filename": "vod.png",
+    "name": "vod",
+    "addedAt": "2025-10-24T12:52:45.827Z"
+  }
+]
