@@ -54,6 +54,12 @@ const renderProgressElement = (element, data, colors) => {
     background: `linear-gradient(90deg, ${colors.progressBarFill || '#002740'} 0%, ${colors.progressBarFillEnd || '#004d73'} 100%)`
   }
   
+  // Use custom subtext if provided, otherwise show percentage if enabled
+  let subtitle = fields.subtext || ''
+  if (!subtitle && fields.showPercentage) {
+    subtitle = `${Math.round(percentage)}% complete`
+  }
+  
   return {
     emote: element.emote || '📊',
     title: element.title || 'Progress',
@@ -71,7 +77,8 @@ const renderProgressElement = (element, data, colors) => {
         </div>
       </div>
     ),
-    subtitle: fields.showPercentage ? `${Math.round(percentage)}% complete` : (element.subtitle || '')
+    subtitle: subtitle,
+    emoteSize: element.emoteSize || 100
   }
 }
 
@@ -94,7 +101,8 @@ const renderCounterElement = (element, data, colors) => {
         {suffix && <span className="donation-suffix">{suffix}</span>}
       </div>
     ),
-    subtitle: element.subtitle || ''
+    subtitle: fields.subtext || '',
+    emoteSize: element.emoteSize || 100
   }
 }
 
@@ -113,7 +121,8 @@ const renderListElement = (element, data, colors) => {
     return {
       type: 'carousel',
       items: visibleItems,
-      emote: element.emote || '📋'
+      emote: element.emote || '📋',
+      emoteSize: element.emoteSize || 100
     }
   }
   
@@ -135,12 +144,13 @@ const renderListElement = (element, data, colors) => {
         )}
       </div>
     ),
-    subtitle: element.subtitle || ''
+    subtitle: fields.subtext || '',
+    emoteSize: element.emoteSize || 100
   }
 }
 
 /**
- * Info element (for simple text/image displays like Latest VOD)
+ * Info element (for custom text/thumbnails like latest VOD)
  */
 const renderInfoElement = (element, data, colors) => {
   const fields = element.fields || {}
@@ -148,21 +158,20 @@ const renderInfoElement = (element, data, colors) => {
   const subtext = data?.subtext || fields.subtext || ''
   const showThumbnail = fields.showThumbnail && data?.thumbnail
   
+  // Use thumbnail as emote if showThumbnail is enabled and thumbnail exists
+  const emote = showThumbnail ? data.thumbnail : (element.emote || 'ℹ️')
+  
   return {
-    emote: element.emote || 'ℹ️',
+    emote: emote,
     title: element.title || 'Info',
     content: (
       <div className="panel-vod-info-simple">
-        {showThumbnail && (
-          <div className="panel-vod-thumbnail">
-            <img src={data.thumbnail} alt={text} />
-          </div>
-        )}
         <div className="panel-vod-title">{text}</div>
         {subtext && <div className="panel-vod-date">{subtext}</div>}
       </div>
     ),
-    subtitle: element.subtitle || ''
+    subtitle: element.subtitle || '',
+    emoteSize: element.emoteSize || 100
   }
 }
 
@@ -184,7 +193,8 @@ const renderCustomElement = (element, data, colors) => {
         )}
       </div>
     ),
-    subtitle: element.subtitle || ''
+    subtitle: fields.subtext || '',
+    emoteSize: element.emoteSize || 100
   }
 }
 
@@ -206,6 +216,11 @@ export const getElementData = (element, allData, config) => {
   if (dataSource.startsWith('twitch.')) {
     const twitchKey = dataSource.replace('twitch.', '')
     return allData?.twitch?.[twitchKey] || {}
+  }
+  
+  if (dataSource.startsWith('youtube.')) {
+    const youtubeKey = dataSource.replace('youtube.', '')
+    return allData?.youtube?.[youtubeKey] || {}
   }
   
   if (dataSource.startsWith('custom.')) {
@@ -230,9 +245,48 @@ export const getElementData = (element, allData, config) => {
  * This helps with backward compatibility
  */
 export const migrateOldConfig = (oldConfig) => {
+  // Migration: Add animation to existing elements if missing
+  // Migration: Move chat commands from global to element fields
+  // Migration: Move subtitle from element root to fields.subtext
   if (oldConfig.elements && Array.isArray(oldConfig.elements)) {
-    // Already new format
-    return oldConfig
+    const migratedElements = oldConfig.elements.map(element => {
+      let migrated = { ...element }
+      
+      // Add animation if missing
+      if (!migrated.animation) {
+        migrated.animation = 'fadeIn'
+      }
+      
+      // Migrate chat commands from config.chatCommands to element fields
+      if (element.type === 'list' && element.dataSource === 'config.chatCommands') {
+        migrated.dataSource = 'none'
+        migrated.fields = {
+          ...migrated.fields,
+          items: oldConfig.chatCommands || []
+        }
+      }
+      
+      // Migrate subtitle to fields.subtext
+      if (element.subtitle !== undefined) {
+        migrated.fields = {
+          ...migrated.fields,
+          subtext: element.subtitle
+        }
+        delete migrated.subtitle
+      }
+      
+      // Ensure subtext exists in fields
+      if (!migrated.fields) {
+        migrated.fields = {}
+      }
+      if (migrated.fields.subtext === undefined) {
+        migrated.fields.subtext = ''
+      }
+      
+      return migrated
+    })
+    
+    return { ...oldConfig, elements: migratedElements }
   }
   
   // Convert old format to new format
@@ -250,6 +304,7 @@ export const migrateOldConfig = (oldConfig) => {
         subtitle: '',
         emote: oldElements.followerGoal.emote || '👥',
         zIndex: oldElements.followerGoal.zIndex || 1,
+        animation: 'fadeIn',
         dataSource: 'twitch.followers',
         fields: {
           goal: oldElements.followerGoal.goal || 1000,
@@ -268,6 +323,7 @@ export const migrateOldConfig = (oldConfig) => {
         subtitle: '',
         emote: oldElements.subscriberGoal.emote || '⭐',
         zIndex: oldElements.subscriberGoal.zIndex || 2,
+        animation: 'slideLeft',
         dataSource: 'twitch.subscribers',
         fields: {
           goal: oldElements.subscriberGoal.goal || 500,
@@ -286,6 +342,7 @@ export const migrateOldConfig = (oldConfig) => {
         subtitle: 'Thank you for your support!',
         emote: oldElements.donations.emote || '💰',
         zIndex: oldElements.donations.zIndex || 3,
+        animation: 'slideUp',
         dataSource: 'custom.donations',
         fields: {
           value: 0,
@@ -304,10 +361,12 @@ export const migrateOldConfig = (oldConfig) => {
         subtitle: '',
         emote: '',
         zIndex: oldElements.chatCommands.zIndex || 4,
-        dataSource: 'config.chatCommands',
+        animation: 'fadeIn',
+        dataSource: 'none',
         fields: {
           maxItemsToShow: oldElements.chatCommands.maxCommandsToShow || 3,
-          showAsCarousel: true
+          showAsCarousel: true,
+          items: oldConfig.chatCommands || []
         }
       })
     }
@@ -321,6 +380,7 @@ export const migrateOldConfig = (oldConfig) => {
         subtitle: 'Type !vod or !youtube in chat',
         emote: oldElements.latestVOD.emote || '🎬',
         zIndex: oldElements.latestVOD.zIndex || 5,
+        animation: 'scale',
         dataSource: 'twitch.vods',
         fields: {
           showThumbnail: false,
