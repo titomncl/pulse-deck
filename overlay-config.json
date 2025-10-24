@@ -12,7 +12,7 @@
     "accentColor": "#9146ff"
   },
   "youtubeChannel": {
-    "url": "",
+    "url": "https://www.youtube.com/@TitomNCL",
     "latestVideoTitle": "Latest Stream Highlights",
     "latestVideoDate": "10/12/2025"
   },
@@ -28,44 +28,97 @@
       "emote": "vod.png"
     }
   ],
-  "elements": {
-    "followerGoal": {
+  "elements": [
+    {
+      "id": "followerGoal",
+      "type": "progress",
       "enabled": true,
-      "goal": 200,
-      "current": 0,
-      "zIndex": 1,
       "title": "Follower Goal",
-      "emote": "follower.png"
+      "emote": "follower.png",
+      "zIndex": 1,
+      "animation": "fadeIn",
+      "dataSource": "twitch.followers",
+      "fields": {
+        "goal": 200,
+        "current": 0,
+        "showPercentage": true,
+        "subtext": ""
+      },
+      "emoteSize": 100
     },
-    "subscriberGoal": {
+    {
+      "id": "subscriberGoal",
+      "type": "progress",
       "enabled": true,
-      "goal": 500,
-      "current": 0,
-      "zIndex": 2,
       "title": "Subscriber Goal",
-      "emote": "subscriber.png"
+      "emote": "subscriber.png",
+      "zIndex": 2,
+      "animation": "slideLeft",
+      "dataSource": "twitch.subscribers",
+      "fields": {
+        "goal": 500,
+        "current": 0,
+        "showPercentage": true,
+        "subtext": ""
+      }
     },
-    "donations": {
+    {
+      "id": "donations",
+      "type": "counter",
       "enabled": true,
-      "zIndex": 3,
       "title": "Total Donations",
-      "emote": "donation.png"
+      "emote": "donation.png",
+      "zIndex": 1,
+      "animation": "slideUp",
+      "dataSource": "custom.donations",
+      "fields": {
+        "value": 0,
+        "prefix": "",
+        "suffix": " €",
+        "subtext": "Thank you for your support!"
+      }
     },
-    "chatCommands": {
+    {
+      "id": "chatCommands",
+      "type": "list",
       "enabled": true,
-      "maxCommandsToShow": 3,
-      "zIndex": 4
+      "title": "Chat Commands",
+      "emote": "discord.png",
+      "zIndex": 4,
+      "animation": "fadeIn",
+      "dataSource": "none",
+      "fields": {
+        "maxItemsToShow": 3,
+        "showAsCarousel": true,
+        "items": [
+          {
+            "name": "!discord",
+            "description": "Join our Discord server",
+            "emote": "discord.png"
+          }
+        ],
+        "subtext": ""
+      }
     },
-    "latestVOD": {
+    {
+      "id": "latestVOD",
+      "type": "info",
       "enabled": true,
-      "zIndex": 5,
       "title": "Latest VOD",
-      "emote": "🎬"
+      "emote": "",
+      "zIndex": 5,
+      "animation": "scale",
+      "dataSource": "youtube.latest",
+      "fields": {
+        "showThumbnail": true,
+        "text": "Latest Stream Highlights",
+        "subtext": "Type !vod or !youtube in chat",
+        "youtubeVideoIndex": 1
+      },
+      "emoteSize": 130
     }
-  },
-  "goalAnimations": {
-    "enabled": true,
-    "type": "confetti",
-    "duration": 3000
+  ],
+  "youtube": {
+    "channelId": "UC9qOFhzazyQoCwm6Zs6lkcg"
   }
 }
