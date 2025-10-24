@@ -2,25 +2,27 @@
 
 > *A self-hosted dynamic overlay builder for Twitch — real-time sync, full customization, zero cloud dependencies.*
 
-**v0.1.0** - A beautiful, fully customizable streaming overlay that runs locally on your machine. No hard-coded limitations—create the perfect overlay for your stream!
+**v0.2.0** - More polish, improved UX, and per-element animations. Build beautiful overlays faster with finer control over visuals and behavior.
 
 [![Status](https://img.shields.io/badge/status-alpha-orange)]()
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)]()
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-orange)]()
 [![React](https://img.shields.io/badge/React-18-61dafb?logo=react)]()
 [![Express](https://img.shields.io/badge/Express-4-000000?logo=express)]()
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite)]()
 
-![Pulse Deck](https://via.placeholder.com/800x200/9146ff/ffffff?text=Pulse+Deck+v0.1)
+![Pulse Deck](https://via.placeholder.com/800x200/9146ff/ffffff?text=Pulse+Deck+v0.2)
 *⚠️ Visual coming soon - this is a placeholder*
 
-## ✨ What's New in v0.1.0
+## ✨ Highlights in v0.2.0
 
-- 🎉 **Dynamic Elements** - Add unlimited custom elements through the UI
-- 🎨 **5 Element Types** - Progress, Counter, List, Info, Custom HTML
-- 💾 **User Defaults** - Save & restore your perfect setup
-- 🔄 **Real-time Sync** - Changes apply instantly to OBS via WebSocket
-- 📱 **Beautiful UI** - Modern, intuitive interface
+- per-element animations: choose how each element enters and exits (fade, slides, scale, or none)
+- emote & thumbnail improvements: centered square cropping with rounded corners and a live size slider for fine control
+- marquee for long text: long titles and subtitles scroll smoothly while keeping panel layout stable
+- improved preview experience: stable preview sizing so animations and overflow behave predictably
+- youtube & latest vod improvements: more robust fetching with optional API key and selectable recent videos
+
+these changes focus on polish and usability: better visuals, predictable preview behavior, and improved control over individual elements.
 
 ---
 
@@ -642,9 +644,9 @@ Special thanks to:
 
 ---
 
-## 📊 Project Stats
-
-- **Version**: 0.1.0 (Alpha)
+-## 📊 Project Stats
+-
+- **Version**: 0.2.0 (Alpha)
 - **Last Updated**: October 24, 2025
 - **Lines of Code**: ~3,500
 - **Elements You Can Create**: Unlimited! 🚀
