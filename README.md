@@ -24,27 +24,58 @@
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 Quick Start
 
-### 1. Install
+### For Streamers (No Coding Required!)
+
+1. **Download Pulse Deck**
+   - Go to [Releases](https://github.com/titomncl/pulse-deck/releases)
+   - Download `pulse-deck-v0.1.0.zip`
+   - Extract the ZIP file to your desired location
+
+2. **Install Node.js** (if you don't have it)
+   - Download from [nodejs.org](https://nodejs.org/) (choose LTS version 18+)
+   - Run the installer and follow the prompts
+   - Restart your computer after installation (if asked)
+
+3. **Start Pulse Deck**
+   - **Windows:** Run `START_OVERLAY.bat`
+   - **macOS/Linux:** Run `start_overlay.sh`
+   - Wait for automatic setup (first time only)
+
+4. **Configure Your Overlay**
+   - In the browser of your choice, go to `http://localhost:3000/customize`
+   - Click "Connect with Twitch" to authorize
+   - Add elements, customize colors, save your setup
+
+5. **Add to OBS**
+   - Click "🔗 Generate OBS URL" button
+   - Copy the generated URL
+   - In OBS: Add **Browser Source**
+   - Paste URL, set size to **1920x1080**
+   - ✅ Done!
+
+---
+
+### For Developers
+
 ```bash
+# Clone repository
+git clone https://github.com/titomncl/pulse-deck
+cd pulse-deck
+
+# Install dependencies
 npm install
-```
 
-### 2. Start Server
-```bash
+# Build application (required!)
+npm run build
+
+# Start development server
+npm run dev
+
+# Or start production server
 npm start
 ```
-
-### 3. Configure Your Overlay
-Open `http://localhost:3000/customize` in your browser
-
-### 4. Add to OBS
-1. Click "🔗 Generate OBS URL" in the customize page
-2. Add **Browser Source** in OBS
-3. Paste the generated URL
-4. Set dimensions: **1920x1080**
-5. ✅ Done! Your overlay is live
 
 ---
 
@@ -100,13 +131,13 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 - **Twitch API** - Live follower/subscriber counts (requires API setup)
 - **Config-based** - Static data like chat commands, social links
 - **Manual** - Set custom values that you control
-- **Custom** - Integrate donations (Streamlabs, StreamElements), alerts, or anything!
+- **Custom** - Advanced: Integrate external APIs *(examples coming in v0.2)*
 
 ### 🎬 OBS Integration
 **Seamless live updates:** Changes sync to OBS instantly—no refresh needed.
 
 - **WebSocket sync** - Real-time updates without lag
-- **Secure authentication** - UUID-based tokens prevent unauthorized access
+- **UUID-based URLs** - Masks Twitch tokens and links to your specific overlay config
 - **No refresh needed** - Edit elements while streaming
 - **Multiple instances** - Use different overlay configs per OBS scene
 
@@ -128,25 +159,35 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 1. **Create Twitch Developer Application**
    - Go to https://dev.twitch.tv/console/apps
    - Click "Register Your Application"
-   - Set OAuth Redirect URL to `http://localhost:3000/auth/callback`
+   - Name: "Pulse Deck" (or your choice)
+   - OAuth Redirect URL: `http://localhost:3000/auth/callback`
+   - Category: "Application Integration"
    - Save your **Client ID** and **Client Secret**
 
-2. **Configure in Pulse Deck**
-   - Open `/customize` page
-   - Click "🔗 Generate OBS URL"
-   - Enter your Twitch Client ID and API Key
-   - Click "Generate" - your credentials are stored locally
+2. **Connect Your Twitch Account**
+   - Open `http://localhost:3000/customize` in your browser (NOT in OBS)
+   - Click "**Connect with Twitch**" button
+   - Authorize Pulse Deck to access your data
+   - Your credentials are stored securely in browser localStorage
 
-3. **Enable Live Data**
-   - Edit any element
-   - Set Data Source to "Twitch Followers" or "Twitch Subscribers"
-   - Your live counts will update automatically!
+3. **Generate OBS Browser URL**
+   - Click "**🔗 Generate OBS URL**" button
+   - A unique URL with UUID is created
+   - Server links your Twitch data to this UUID
+   - Copy the URL
+
+4. **Enable Live Data in Elements**
+   - Add or edit an element
+   - Set Data Source to "**Twitch Followers**" or "**Twitch Subscribers**"
+   - Live counts will update automatically!
 
 **Supported Twitch Data:**
 - Follower count (real-time)
 - Subscriber count (real-time)
 - Latest VOD information
 - Stream status *(coming in v0.2)*
+
+**Note:** The UUID in your OBS URL is for uniqueness, not security. Anyone with the URL can view your overlay, but URLs are hard to guess.
 
 ---
 
