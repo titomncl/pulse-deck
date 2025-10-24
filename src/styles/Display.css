@@ -12,57 +12,10 @@
 .display-panel-wrapper {
   max-width: 850px;
   width: 100%;
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  /* No transitions here - panel stays static */
 }
 
-/* Transition animations */
-.display-panel-wrapper.transitioning.transition-fadeSlide {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.display-panel-wrapper.transition-fadeSlide {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.display-panel-wrapper.transitioning.transition-fade {
-  opacity: 0;
-}
-
-.display-panel-wrapper.transition-fade {
-  opacity: 1;
-}
-
-.display-panel-wrapper.transitioning.transition-slideUp {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.display-panel-wrapper.transition-slideUp {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.display-panel-wrapper.transitioning.transition-slideDown {
-  opacity: 0;
-  transform: translateY(-30px);
-}
-
-.display-panel-wrapper.transition-slideDown {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.display-panel-wrapper.transitioning.transition-zoom {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.display-panel-wrapper.transition-zoom {
-  opacity: 1;
-  transform: scale(1);
-}
+/* REMOVED: Global wrapper transitions moved to per-element content */
 
 .loading {
   display: flex;
@@ -73,6 +26,51 @@
   background: #1f1f1f;
   color: #ffffff;
   font-size: 24px;
+}
+
+/* Empty state when no elements enabled */
+.display-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 400px;
+  padding: 40px 20px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(0, 39, 64, 0.9) 0%, rgba(0, 77, 115, 0.9) 100%);
+  padding: 60px 40px;
+  border-radius: 16px;
+  max-width: 500px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.empty-message h2 {
+  margin: 0 0 16px 0;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.empty-message p {
+  margin: 12px 0;
+  font-size: 18px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.empty-message a {
+  color: #4CAF50;
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.empty-message a:hover {
+  border-bottom-color: #4CAF50;
 }
 
 /* VOD simple info (no thumbnail) */
