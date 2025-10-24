@@ -41,6 +41,12 @@ function Customize() {
     subscribers: { current: 0 }
   })
   const [loadingTwitchData, setLoadingTwitchData] = useState(false)
+  
+  // Real YouTube data for preview
+  const [youtubeData, setYoutubeData] = useState({
+    latest: { text: 'Latest YouTube Video', subtext: 'Preview mode', thumbnail: null }
+  })
+  const [loadingYoutubeData, setLoadingYoutubeData] = useState(false)
 
   // 1. Authentication - ONE simple useEffect
   useEffect(() => {
@@ -80,11 +86,21 @@ function Customize() {
     const preview = getPreviewConfig()
     setPreviewConfigState(preview ? migrateOldConfig(preview) : JSON.parse(JSON.stringify(overlayConfig)))
     
-    fetch('/emotes/emotes.json')
-      .then(res => res.json())
-      .then(data => setAvailableEmotes(data.emotes || []))
-      .catch(() => setAvailableEmotes([]))
+    loadAvailableEmotes()
   }, [])
+
+  // Helper function to load emotes from server
+  const loadAvailableEmotes = async () => {
+    try {
+      const response = await fetch('/api/emotes')
+      const data = await response.json()
+      const filenames = data.map(emote => emote.filename)
+      setAvailableEmotes(filenames)
+    } catch (error) {
+      console.error('Error loading emotes:', error)
+      setAvailableEmotes([])
+    }
+  }
 
   // 3. Fetch real Twitch data for preview
   useEffect(() => {
@@ -111,14 +127,83 @@ function Customize() {
     fetchRealData()
   }, [authState])
 
+  // 3.5. Fetch real YouTube data for preview
+  useEffect(() => {
+    if (!previewConfig?.youtube?.channelId) return
+
+    const fetchYouTubeData = async () => {
+      setLoadingYoutubeData(true)
+      try {
+        const apiKey = previewConfig.youtube.apiKey || ''
+        
+        // Find the first element using YouTube data source (prioritize selected element)
+        let currentElement = null
+        
+        if (selectedElement) {
+          // First try to get the selected element
+          currentElement = previewConfig.elements?.find(el => el.id === selectedElement)
+        }
+        
+        // If no selected element or selected isn't YouTube, find first YouTube element
+        if (!currentElement || currentElement?.dataSource !== 'youtube.latest') {
+          currentElement = previewConfig.elements?.find(el => el.dataSource === 'youtube.latest')
+        }
+        
+        // Get videoIndex from the current element if it's using YouTube data source
+        const videoIndex = currentElement?.dataSource === 'youtube.latest' ? 
+          (currentElement?.fields?.youtubeVideoIndex || 0) : 0
+        
+        console.log('=== YouTube Fetch Debug ===')
+        console.log('Selected element ID:', selectedElement)
+        console.log('Found YouTube element ID:', currentElement?.id)
+        console.log('Element dataSource:', currentElement?.dataSource)
+        console.log('Element fields:', currentElement?.fields)
+        console.log('youtubeVideoIndex from fields:', currentElement?.fields?.youtubeVideoIndex)
+        console.log('Final videoIndex:', videoIndex)
+        
+        const url = `/api/youtube/latest-video?channelId=${encodeURIComponent(previewConfig.youtube.channelId)}${apiKey ? `&apiKey=${encodeURIComponent(apiKey)}` : ''}&videoIndex=${videoIndex}`
+        
+        console.log('Fetching YouTube video with index:', videoIndex)
+        
+        const response = await fetch(url)
+        const videoData = await response.json()
+        
+        if (videoData.error) {
+          console.error('YouTube API error:', videoData.error)
+          setYoutubeData({
+            latest: { text: 'Error loading video', subtext: videoData.error, thumbnail: null }
+          })
+        } else {
+          setYoutubeData({
+            latest: videoData
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching YouTube data:', error)
+        setYoutubeData({
+          latest: { text: 'Error loading video', subtext: error.message, thumbnail: null }
+        })
+      } finally {
+        setLoadingYoutubeData(false)
+      }
+    }
+
+    fetchYouTubeData()
+  }, [
+    previewConfig?.youtube?.channelId, 
+    previewConfig?.youtube?.apiKey,
+    // Only re-fetch when the videoIndex of a YouTube element changes
+    previewConfig?.elements?.find(el => el.dataSource === 'youtube.latest')?.fields?.youtubeVideoIndex
+  ])
+
   // 4. Update preview step when selectedElement changes
   useEffect(() => {
     if (!selectedElement || !previewConfig) return
     
     const enabledSteps = getEnabledSteps()
     const stepIndex = enabledSteps.findIndex(step => {
-      if (selectedElement === 'chatCommands') return step.type === 'chatCommand'
-      return step.type === selectedElement
+      // Match by element ID
+      return step.elementId === selectedElement
     })
     
     if (stepIndex !== -1) {
@@ -138,9 +223,7 @@ function Customize() {
       
       // Special handling for list elements with carousel
       if (element.type === 'list' && element.fields?.showAsCarousel) {
-        const items = element.dataSource === 'config.chatCommands' 
-          ? (previewConfig.chatCommands || [])
-          : []
+        const items = element.fields?.items || []
         const maxItems = element.fields.maxItemsToShow || items.length
         
         items.slice(0, maxItems).forEach((item, index) => {
@@ -198,6 +281,7 @@ function Customize() {
       subtitle: '',
       emote: '⭐',
       zIndex: elements.length + 1,
+      animation: 'fadeIn',
       dataSource: 'none',
       fields: {
         text: 'Custom text',
@@ -241,35 +325,40 @@ function Customize() {
     setPreviewConfig(newConfig)
   }
 
-  const updateChatCommand = (index, updates) => {
-    const newCommands = [...(previewConfig.chatCommands || [])]
-    newCommands[index] = { ...newCommands[index], ...updates }
-    const newConfig = {
-      ...previewConfig,
-      chatCommands: newCommands
-    }
-    setPreviewConfigState(newConfig)
-    setPreviewConfig(newConfig)
+  // Helper functions for managing List element items
+  const updateListItem = (elementId, itemIndex, updates) => {
+    const element = previewConfig.elements.find(el => el.id === elementId)
+    if (!element || element.type !== 'list') return
+    
+    const newItems = [...(element.fields?.items || [])]
+    newItems[itemIndex] = { ...newItems[itemIndex], ...updates }
+    updatePreviewElement(elementId, {
+      fields: { ...element.fields, items: newItems }
+    })
   }
 
-  const addChatCommand = () => {
-    const newCommands = [...(previewConfig.chatCommands || []), { name: '!new', description: 'New command', emote: '💬' }]
-    const newConfig = {
-      ...previewConfig,
-      chatCommands: newCommands
-    }
-    setPreviewConfigState(newConfig)
-    setPreviewConfig(newConfig)
+  const addListItem = (elementId) => {
+    const element = previewConfig.elements.find(el => el.id === elementId)
+    if (!element || element.type !== 'list') return
+    
+    const newItems = [...(element.fields?.items || []), { 
+      name: '!new', 
+      description: 'New command', 
+      emote: '💬' 
+    }]
+    updatePreviewElement(elementId, {
+      fields: { ...element.fields, items: newItems }
+    })
   }
 
-  const deleteChatCommand = (index) => {
-    const newCommands = (previewConfig.chatCommands || []).filter((_, i) => i !== index)
-    const newConfig = {
-      ...previewConfig,
-      chatCommands: newCommands
-    }
-    setPreviewConfigState(newConfig)
-    setPreviewConfig(newConfig)
+  const deleteListItem = (elementId, itemIndex) => {
+    const element = previewConfig.elements.find(el => el.id === elementId)
+    if (!element || element.type !== 'list') return
+    
+    const newItems = (element.fields?.items || []).filter((_, i) => i !== itemIndex)
+    updatePreviewElement(elementId, {
+      fields: { ...element.fields, items: newItems }
+    })
   }
 
   const handleEmoteChange = (elementKey, value) => {
@@ -283,6 +372,112 @@ function Customize() {
 
   const clearEmote = (elementKey) => {
     updatePreviewElement(elementKey, { emote: '' })
+  }
+
+  const handleEmoteUpload = async (event) => {
+    const files = Array.from(event.target.files)
+    if (files.length === 0) return
+    
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
+    let uploadedCount = 0
+    let failedCount = 0
+    let errors = []
+    
+    for (const file of files) {
+      // Validate file type
+      if (!validTypes.includes(file.type)) {
+        errors.push(`${file.name}: Invalid file type`)
+        failedCount++
+        continue
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        errors.push(`${file.name}: File too large (max 5MB)`)
+        failedCount++
+        continue
+      }
+      
+      try {
+        // Read file as base64
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = (e) => resolve(e.target.result)
+          reader.onerror = () => reject(new Error('Error reading file'))
+          reader.readAsDataURL(file)
+        })
+        
+        // Send to server
+        const response = await fetch('/api/emotes/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: file.name,
+            data: base64Data
+          })
+        })
+        
+        const result = await response.json()
+        
+        if (result.success) {
+          uploadedCount++
+        } else {
+          errors.push(`${file.name}: ${result.error}`)
+          failedCount++
+        }
+      } catch (error) {
+        errors.push(`${file.name}: ${error.message}`)
+        failedCount++
+      }
+    }
+    
+    // Show summary
+    let message = ''
+    if (uploadedCount > 0) {
+      message += `✅ Successfully uploaded ${uploadedCount} emote${uploadedCount > 1 ? 's' : ''}`
+    }
+    if (failedCount > 0) {
+      message += `\n❌ Failed: ${failedCount} file${failedCount > 1 ? 's' : ''}`
+      if (errors.length > 0) {
+        message += `\n\nErrors:\n${errors.join('\n')}`
+      }
+    }
+    
+    if (message) {
+      alert(message)
+    }
+    
+    // Reload emotes list
+    if (uploadedCount > 0) {
+      loadAvailableEmotes()
+    }
+    
+    // Reset file input
+    event.target.value = ''
+  }
+
+  const handleDeleteEmote = async (filename) => {
+    if (!confirm(`Delete emote "${filename}"? This cannot be undone.`)) {
+      return
+    }
+    
+    try {
+      const response = await fetch(`/api/emotes/${encodeURIComponent(filename)}`, {
+        method: 'DELETE'
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        alert(`✅ Deleted: ${filename}`)
+        loadAvailableEmotes()
+      } else {
+        alert(`❌ Delete failed: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error deleting emote:', error)
+      alert('❌ Error deleting emote: ' + error.message)
+    }
   }
 
   const handleApplyChanges = async () => {
@@ -477,6 +672,18 @@ function Customize() {
           </div>
         )}
         
+        {loadingYoutubeData && (
+          <div className="youtube-data-loading">
+            ⏳ Loading YouTube data...
+          </div>
+        )}
+        
+        {!loadingYoutubeData && youtubeData.latest?.text && youtubeData.latest.text !== 'Latest YouTube Video' && (
+          <div className="youtube-data-loaded">
+            ✅ YouTube: {youtubeData.latest.text.substring(0, 40)}...
+          </div>
+        )}
+        
         <div className="tabs">
           <button 
             className={activeTab === 'elements' ? 'active' : ''}
@@ -498,7 +705,7 @@ function Customize() {
             {(Array.isArray(previewConfig.elements) ? previewConfig.elements : []).map((element) => (
               <div
                 key={element.id}
-                className={`element-item ${selectedElement === element.id ? 'selected' : ''}`}
+                className={`element-item ${selectedElement === element.id ? 'selected' : ''} ${!element.enabled ? 'disabled' : ''}`}
                 onClick={() => setSelectedElement(element.id)}
               >
                 <input
@@ -508,8 +715,10 @@ function Customize() {
                     e.stopPropagation()
                     updatePreviewElement(element.id, { enabled: e.target.checked })
                   }}
+                  title={element.enabled ? 'Hide element' : 'Show element'}
                 />
-                <span>{element.title || element.id}</span>
+                <span className="element-title">{element.title || element.id}</span>
+                {!element.enabled && <span className="element-status-badge">Hidden</span>}
                 <button
                   className="delete-element-btn"
                   onClick={(e) => {
@@ -564,47 +773,70 @@ function Customize() {
                 />
               </div>
               
-              {/* Subtitle */}
+              {/* Subtext (optional) */}
               <div className="control-group">
-                <label>Subtitle (optional)</label>
+                <label>Subtext (optional)</label>
                 <input
                   type="text"
-                  value={element.subtitle || ''}
-                  onChange={(e) => updatePreviewElement(element.id, { subtitle: e.target.value })}
-                  placeholder="Subtitle text"
+                  value={element.fields?.subtext || ''}
+                  onChange={(e) => updatePreviewElement(element.id, { 
+                    fields: { ...element.fields, subtext: e.target.value }
+                  })}
+                  placeholder="Additional text below content"
                 />
+                <small>Appears below the main content</small>
               </div>
 
-              {/* Emote */}
+              {/* Emote - hidden for List type as each item has its own */}
+              {element.type !== 'list' && (
+                <div className="control-group">
+                  <label>Emote / Icon</label>
+                  
+                  {/* Visual Emote Picker */}
+                  {availableEmotes.length > 0 ? (
+                    <div className="emote-picker">
+                      <div className="emote-picker-grid">
+                        {availableEmotes.map((emote) => (
+                          <div
+                            key={emote}
+                            className={`emote-picker-item ${element.emote === emote ? 'selected' : ''}`}
+                            onClick={() => updatePreviewElement(element.id, { emote: emote })}
+                            title={emote}
+                          >
+                            <img src={`/emotes/${emote}`} alt={emote} className="emote-picker-preview" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="empty-emotes-message">
+                      No emotes imported yet. Go to Settings → Emote Library to import emotes.
+                    </div>
+                  )}
+                  
+                  <input
+                    type="text"
+                    value={element.emote || ''}
+                    onChange={(e) => updatePreviewElement(element.id, { emote: e.target.value })}
+                    placeholder="emoji (👥) or filename (logo.png)"
+                  />
+                  <small>Click emote above or enter emoji/filename manually</small>
+                </div>
+              )}
+              
+              {/* Emote/Icon Size Control */}
               <div className="control-group">
-                <label>Emote / Icon</label>
-                
-                {availableEmotes.length > 0 && (
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        updatePreviewElement(element.id, { emote: e.target.value })
-                      }
-                    }}
-                    className="emote-dropdown"
-                  >
-                    <option value="">-- Select from /emotes/ folder --</option>
-                    {availableEmotes.map((emote) => (
-                      <option key={emote} value={emote}>
-                        {emote}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                
+                <label>Emote / Icon Size: {element.emoteSize || 100}%</label>
                 <input
-                  type="text"
-                  value={element.emote || ''}
-                  onChange={(e) => updatePreviewElement(element.id, { emote: e.target.value })}
-                  placeholder="emoji (👥) or filename (logo.png)"
+                  type="range"
+                  min="30"
+                  max="150"
+                  step="5"
+                  value={element.emoteSize || 100}
+                  onChange={(e) => updatePreviewElement(element.id, { emoteSize: parseInt(e.target.value) })}
+                  className="emote-size-slider"
                 />
-                <small>Select from dropdown or enter emoji/filename manually</small>
+                <small>Adjust the size of the emote, icon, or thumbnail (30% - 150%)</small>
               </div>
               
               {/* Type-specific fields */}
@@ -656,11 +888,23 @@ function Customize() {
                     <label>Value</label>
                     <input
                       type="number"
+                      step="0.01"
                       value={element.fields?.value || 0}
                       onChange={(e) => updatePreviewElement(element.id, { 
-                        fields: { ...element.fields, value: parseInt(e.target.value) || 0 }
+                        fields: { ...element.fields, value: parseFloat(e.target.value) || 0 }
                       })}
                     />
+                    <span className="field-hint">
+                      {element.dataSource === 'custom.donations' && (
+                        <>⚠️ Twitch API does not track donations. Update this manually or integrate with StreamElements/Streamlabs (v0.2+)</>
+                      )}
+                      {element.dataSource?.startsWith('twitch.') && (
+                        <>This value is auto-updated from Twitch API</>
+                      )}
+                      {!element.dataSource || element.dataSource === 'none' && (
+                        <>Manual value - update as needed</>
+                      )}
+                    </span>
                   </div>
                   
                   <div className="control-group">
@@ -716,6 +960,103 @@ function Customize() {
                       {' '}Show as Carousel (one item at a time)
                     </label>
                   </div>
+
+                  {/* List Items Editor - shown when dataSource is 'none' */}
+                  {(!element.dataSource || element.dataSource === 'none') && (
+                    <>
+                      <h4>List Items</h4>
+                      <div className="list-items-editor">
+                        {(element.fields?.items || []).map((item, index) => (
+                          <div key={index} className="list-item-card">
+                            {/* Header with emote and delete */}
+                            <div className="list-item-header">
+                              <div className="list-item-emote-display">
+                                {item.emote && item.emote.endsWith('.png') || item.emote?.endsWith('.jpg') || item.emote?.endsWith('.gif') || item.emote?.endsWith('.webp') ? (
+                                  <img src={`/emotes/${item.emote}`} alt="" className="list-item-emote-img" />
+                                ) : (
+                                  <span className="list-item-emote-emoji">{item.emote || '💬'}</span>
+                                )}
+                              </div>
+                              <div className="list-item-title-group">
+                                <input
+                                  type="text"
+                                  value={item.name}
+                                  onChange={(e) => updateListItem(element.id, index, { name: e.target.value })}
+                                  placeholder="Item name (!command, Title, etc.)"
+                                  className="list-item-name-input"
+                                />
+                              </div>
+                              <button 
+                                onClick={() => deleteListItem(element.id, index)}
+                                className="delete-list-item-btn"
+                                title="Delete item"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+
+                            {/* Fields */}
+                            <div className="list-item-fields">
+                              <div className="list-item-field">
+                                <label className="list-item-label">Description</label>
+                                <input
+                                  type="text"
+                                  value={item.description}
+                                  onChange={(e) => updateListItem(element.id, index, { description: e.target.value })}
+                                  placeholder="What does this do?"
+                                  className="list-item-input"
+                                />
+                              </div>
+
+                              <div className="list-item-field">
+                                <label className="list-item-label">Subtext <span className="optional-label">(optional)</span></label>
+                                <input
+                                  type="text"
+                                  value={item.subtext || ''}
+                                  onChange={(e) => updateListItem(element.id, index, { subtext: e.target.value })}
+                                  placeholder="Additional info"
+                                  className="list-item-input"
+                                />
+                              </div>
+
+                              {/* Emote Picker Section */}
+                              <div className="list-item-field">
+                                <label className="list-item-label">Emote / Icon</label>
+                                <input
+                                  type="text"
+                                  value={item.emote || ''}
+                                  onChange={(e) => updateListItem(element.id, index, { emote: e.target.value })}
+                                  placeholder="💬 emoji or filename"
+                                  className="list-item-input"
+                                />
+                                
+                                {/* Visual Emote Picker */}
+                                {availableEmotes.length > 0 && (
+                                  <div className="list-item-emote-picker">
+                                    <div className="emote-picker-grid">
+                                      {availableEmotes.map((emote) => (
+                                        <div
+                                          key={emote}
+                                          className={`emote-picker-item ${item.emote === emote ? 'selected' : ''}`}
+                                          onClick={() => updateListItem(element.id, index, { emote: emote })}
+                                          title={emote}
+                                        >
+                                          <img src={`/emotes/${emote}`} alt={emote} className="emote-picker-preview" />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        <button onClick={() => addListItem(element.id)} className="add-list-item-btn">
+                          ➕ Add List Item
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
               
@@ -734,18 +1075,6 @@ function Customize() {
                   </div>
                   
                   <div className="control-group">
-                    <label>Subtext (optional)</label>
-                    <input
-                      type="text"
-                      value={element.fields?.subtext || ''}
-                      onChange={(e) => updatePreviewElement(element.id, { 
-                        fields: { ...element.fields, subtext: e.target.value }
-                      })}
-                      placeholder="Additional text"
-                    />
-                  </div>
-                  
-                  <div className="control-group">
                     <label>
                       <input
                         type="checkbox"
@@ -756,7 +1085,32 @@ function Customize() {
                       />
                       {' '}Show Thumbnail (if available)
                     </label>
+                    <small>Replaces emote/icon with thumbnail image</small>
                   </div>
+                  
+                  {/* YouTube Video Index - only show when data source is youtube */}
+                  {element.dataSource === 'youtube.latest' && (
+                    <div className="control-group">
+                      <label>Video Selection</label>
+                      <select
+                        value={element.fields?.youtubeVideoIndex || 0}
+                        onChange={(e) => {
+                          const newIndex = parseInt(e.target.value)
+                          console.log('Video selection changed to index:', newIndex)
+                          updatePreviewElement(element.id, { 
+                            fields: { ...element.fields, youtubeVideoIndex: newIndex }
+                          })
+                        }}
+                      >
+                        <option value="0">Latest (most recent)</option>
+                        <option value="1">2nd most recent</option>
+                        <option value="2">3rd most recent</option>
+                        <option value="3">4th most recent</option>
+                        <option value="4">5th most recent</option>
+                      </select>
+                      <small>Select which non-Short video to display (excludes videos under 60 seconds)</small>
+                    </div>
+                  )}
                 </>
               )}
               
@@ -786,7 +1140,7 @@ function Customize() {
                   <option value="twitch.followers">Twitch Followers</option>
                   <option value="twitch.subscribers">Twitch Subscribers</option>
                   <option value="twitch.vods">Twitch Latest VOD</option>
-                  <option value="config.chatCommands">Chat Commands List</option>
+                  <option value="youtube.latest">YouTube Latest Video</option>
                   <option value="custom.donations">Donations (custom)</option>
                 </select>
                 <small>Where to get live data for this element</small>
@@ -802,6 +1156,24 @@ function Customize() {
                   onChange={(e) => updatePreviewElement(element.id, { zIndex: parseInt(e.target.value) || 1 })}
                 />
                 <small>Controls the order in the rotation (lower = shown first)</small>
+              </div>
+
+              {/* Animation */}
+              <div className="control-group">
+                <label>Animation</label>
+                <select
+                  value={element.animation || 'fadeIn'}
+                  onChange={(e) => updatePreviewElement(element.id, { animation: e.target.value })}
+                >
+                  <option value="fadeIn">Fade In</option>
+                  <option value="slideLeft">Slide from Right</option>
+                  <option value="slideRight">Slide from Left</option>
+                  <option value="slideUp">Slide from Bottom</option>
+                  <option value="slideDown">Slide from Top</option>
+                  <option value="scale">Scale/Zoom</option>
+                  <option value="none">None (Instant)</option>
+                </select>
+                <small>How this element's content animates when it appears</small>
               </div>
             </div>
           )
@@ -826,17 +1198,89 @@ function Customize() {
             </div>
 
             <div className="control-group">
-              <label>Transition Animation</label>
-              <select
-                value={previewConfig.transitionAnimation || 'fadeSlide'}
-                onChange={(e) => updatePreviewGlobal({ transitionAnimation: e.target.value })}
-              >
-                <option value="fadeSlide">Fade & Slide</option>
-                <option value="fade">Fade Only</option>
-                <option value="slideUp">Slide Up</option>
-                <option value="slideDown">Slide Down</option>
-                <option value="zoom">Zoom</option>
-              </select>
+              <label>⚠️ Animation Settings Moved</label>
+              <div className="field-hint">
+                Animations are now customized per-element! Edit each element to choose its own animation style.
+              </div>
+            </div>
+
+            <h3>YouTube Integration</h3>
+            <div className="control-group">
+              <label>YouTube API Key <span className="optional-label">(optional but recommended)</span></label>
+              <input
+                type="password"
+                value={previewConfig.youtube?.apiKey || ''}
+                onChange={(e) => updatePreviewGlobal({ 
+                  youtube: { ...previewConfig.youtube, apiKey: e.target.value }
+                })}
+                placeholder="Your YouTube Data API v3 key"
+              />
+              <small>
+                <strong>With API key:</strong> Can filter out YouTube Shorts ✅<br />
+                <strong>Without API key:</strong> Uses RSS feed (may include Shorts) ⚠️<br />
+                Get your free API key from <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud Console</a>
+              </small>
+            </div>
+
+            <div className="control-group">
+              <label>YouTube Channel ID or URL</label>
+              <input
+                type="text"
+                value={previewConfig.youtube?.channelId || ''}
+                onChange={(e) => updatePreviewGlobal({ 
+                  youtube: { ...previewConfig.youtube, channelId: e.target.value }
+                })}
+                placeholder="UCxxx... or youtube.com/@yourhandle"
+              />
+              <small>
+                <strong>With API key:</strong> Accepts Channel ID, @handle, or URL<br />
+                <strong>Without API key:</strong> Requires Channel ID (UCxxx...) only
+              </small>
+            </div>
+
+            <h3>Emote Library</h3>
+            <div className="emote-library">
+              <div className="emote-library-header">
+                <input
+                  type="file"
+                  id="settings-emote-file-input"
+                  accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                  onChange={handleEmoteUpload}
+                  style={{ display: 'none' }}
+                  multiple
+                />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('settings-emote-file-input').click()}
+                  className="import-emote-btn"
+                  title="Upload PNG, JPG, GIF, or WebP images (max 5MB each)"
+                >
+                  📤 Import Emotes
+                </button>
+                <small>Upload PNG, JPG, GIF, or WebP (max 5MB each)</small>
+              </div>
+              
+              {availableEmotes.length > 0 ? (
+                <div className="emote-grid">
+                  {availableEmotes.map((emote) => (
+                    <div key={emote} className="emote-grid-item">
+                      <img src={`/emotes/${emote}`} alt={emote} className="emote-preview" />
+                      <span className="emote-filename">{emote}</span>
+                      <button
+                        onClick={() => handleDeleteEmote(emote)}
+                        className="delete-emote-btn"
+                        title="Delete emote"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-library-message">
+                  No emotes imported yet. Click "Import Emotes" above to add images.
+                </div>
+              )}
             </div>
 
             <h3>Color Theme</h3>
@@ -947,75 +1391,6 @@ function Customize() {
               />
               <small>Latest video will be automatically fetched (feature coming soon)</small>
             </div>
-
-            <h3>Chat Commands</h3>
-            <div className="chat-commands-editor">
-              {(previewConfig.chatCommands || []).map((cmd, index) => (
-                <div key={index} className="command-editor-item">
-                  <div className="command-editor-row">
-                    {/* Dropdown for emote selection */}
-                    {availableEmotes.length > 0 && (
-                      <select
-                        value=""
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            updateChatCommand(index, { emote: e.target.value })
-                          }
-                        }}
-                        className="command-emote-dropdown"
-                        title="Select emote from folder"
-                      >
-                        <option value="">📁</option>
-                        {availableEmotes.map((emote) => (
-                          <option key={emote} value={emote}>
-                            {emote}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    
-                    <input
-                      type="text"
-                      value={cmd.emote || '💬'}
-                      onChange={(e) => updateChatCommand(index, { emote: e.target.value })}
-                      placeholder="💬 or file"
-                      className="command-emote-input"
-                    />
-                    <input
-                      type="text"
-                      value={cmd.name}
-                      onChange={(e) => updateChatCommand(index, { name: e.target.value })}
-                      placeholder="!command"
-                      className="command-name-input"
-                    />
-                    <button 
-                      onClick={() => deleteChatCommand(index)}
-                      className="delete-command-btn"
-                      title="Delete command"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    value={cmd.description}
-                    onChange={(e) => updateChatCommand(index, { description: e.target.value })}
-                    placeholder="Command description"
-                    className="command-desc-input"
-                  />
-                  <input
-                    type="text"
-                    value={cmd.subtext || ''}
-                    onChange={(e) => updateChatCommand(index, { subtext: e.target.value })}
-                    placeholder="Optional subtext"
-                    className="command-subtext-input"
-                  />
-                </div>
-              ))}
-              <button onClick={addChatCommand} className="add-command-btn">
-                + Add Command
-              </button>
-            </div>
           </div>
         )}
 
@@ -1071,6 +1446,7 @@ function Customize() {
         currentStep={currentStep}
         previewData={previewData}
         previewConfig={previewConfig}
+        youtubeData={youtubeData}
         onNextStep={handleNextStep}
         onPrevStep={handlePrevStep}
       />
