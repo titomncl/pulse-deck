@@ -35,6 +35,15 @@
   box-shadow: 0 4px 12px rgba(0, 39, 64, 0.1);
 }
 
+/* Preview-specific fixed width: keep the preview panel stable so
+   marquee overflow detection and animations have a consistent container
+   width. This only applies inside the Customize preview (does not
+   affect the global overlay output). */
+.customize-preview .preview-container .slanted-panel {
+  width: 820px; /* fixed preview width for stable measurement */
+  max-width: 95%; /* remain responsive on smaller screens */
+}
+
 .slanted-panel:hover {
   box-shadow: 0 8px 16px rgba(0, 39, 64, 0.15);
 }
@@ -49,7 +58,9 @@
   width: 220px;
   min-width: 220px;
   max-width: 220px;
-  height: 100%;
+  height: 220px;
+  min-height: 220px;
+  max-height: 220px;
   padding: 24px;
   background: transparent;
   display: flex;
@@ -59,13 +70,29 @@
 }
 
 .panel-emote {
-  display: block;
-  max-width: 100px;
-  max-height: 100px;
-  object-fit: contain;
-  font-size: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70%;  /* Base size - 100% slider will mean 70% of container */
+  height: 70%; /* This gives a nice default size with room to grow */
+  max-width: 100%;  /* Can still go up to full container size with slider */
+  max-height: 100%;
+  font-size: 120px;  /* Larger emoji (can be overridden by inline style) */
   line-height: 1;
   text-align: center;
+  border-radius: 16px;
+  overflow: hidden;  /* Clip the image to the rounded corners */
+  position: relative;
+}
+
+/* Image emotes should fill their parent container and crop to fit */
+.panel-emote img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;  /* Crop to fill while maintaining aspect ratio */
+  object-position: center;  /* Center the crop */
+  border-radius: 16px;
+  display: block;
 }
 
 .panel-emote-placeholder {
@@ -107,6 +134,9 @@
   color: #002740;
   margin: 0 0 12px 0;
   line-height: 1.2;
+  overflow: hidden; /* prevent panel growth */
+  white-space: nowrap; /* keep on single line for marquee */
+  position: relative;
 }
 
 .panel-content-body {
@@ -121,6 +151,27 @@
   color: #666;
   margin: 8px 0 0 0;
   opacity: 0.8;
+  overflow: hidden; /* prevent panel growth */
+  white-space: nowrap; /* keep on single line for marquee */
+  position: relative;
+}
+
+/* Scrolling / marquee animation for overflowing text */
+.scrolling-text {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+  animation-name: marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: forwards;
+  animation-delay: 0.9s;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  10% { transform: translateX(0); }
+  100% { transform: translateX(var(--marquee-to, -100px)); }
 }
 
 /* Responsive styles */
@@ -145,13 +196,18 @@
     width: 180px;
     min-width: 180px;
     max-width: 180px;
+    height: 180px;
+    min-height: 180px;
+    max-height: 180px;
     padding: 16px;
   }
 
   .panel-emote {
-    max-width: 70px;
-    max-height: 70px;
-    font-size: 60px;
+    width: 70%;
+    height: 70%;
+    max-width: 100%;  /* Can scale up to container size */
+    max-height: 100%;
+    font-size: 90px;
   }
 
   .panel-right-content {
@@ -174,8 +230,18 @@
   .panel-left-well {
     width: 100%;
     max-width: 100%;
-    min-height: 120px;
+    height: 160px;
+    min-height: 160px;
+    max-height: 160px;
     padding: 16px;
+  }
+  
+  .panel-emote {
+    width: 70%;
+    height: 70%;
+    max-width: 100%;  /* Can scale up to container size */
+    max-height: 100%;
+    font-size: 80px;
   }
   
   .panel-divider {
@@ -366,3 +432,104 @@
 .slanted-panel.goal-reached .panel-progress-fill {
   background: linear-gradient(90deg, #00a86b 0%, #00d084 100%);
 }
+
+/* ============================================
+   PER-ELEMENT CONTENT ANIMATIONS
+   ============================================ */
+
+/* Base state - all animations start here */
+.panel-left-well,
+.panel-right-content {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  opacity: 1;
+  transform: skewX(8deg); /* Maintain panel un-skew */
+}
+
+/* Fade In Animation */
+.panel-left-well.animation-fadeIn,
+.panel-right-content.animation-fadeIn {
+  opacity: 1;
+}
+
+.panel-left-well.transitioning.animation-fadeIn,
+.panel-right-content.transitioning.animation-fadeIn {
+  opacity: 0;
+}
+
+/* Slide Left Animation */
+.panel-left-well.animation-slideLeft,
+.panel-right-content.animation-slideLeft {
+  opacity: 1;
+  transform: skewX(8deg) translateX(0);
+}
+
+.panel-left-well.transitioning.animation-slideLeft,
+.panel-right-content.transitioning.animation-slideLeft {
+  opacity: 0;
+  transform: skewX(8deg) translateX(-40px);
+}
+
+/* Slide Right Animation */
+.panel-left-well.animation-slideRight,
+.panel-right-content.animation-slideRight {
+  opacity: 1;
+  transform: skewX(8deg) translateX(0);
+}
+
+.panel-left-well.transitioning.animation-slideRight,
+.panel-right-content.transitioning.animation-slideRight {
+  opacity: 0;
+  transform: skewX(8deg) translateX(40px);
+}
+
+/* Slide Up Animation */
+.panel-left-well.animation-slideUp,
+.panel-right-content.animation-slideUp {
+  opacity: 1;
+  transform: skewX(8deg) translateY(0);
+}
+
+.panel-left-well.transitioning.animation-slideUp,
+.panel-right-content.transitioning.animation-slideUp {
+  opacity: 0;
+  transform: skewX(8deg) translateY(30px);
+}
+
+/* Slide Down Animation */
+.panel-left-well.animation-slideDown,
+.panel-right-content.animation-slideDown {
+  opacity: 1;
+  transform: skewX(8deg) translateY(0);
+}
+
+.panel-left-well.transitioning.animation-slideDown,
+.panel-right-content.transitioning.animation-slideDown {
+  opacity: 0;
+  transform: skewX(8deg) translateY(-30px);
+}
+
+/* Scale/Zoom Animation */
+.panel-left-well.animation-scale,
+.panel-right-content.animation-scale {
+  opacity: 1;
+  transform: skewX(8deg) scale(1);
+}
+
+.panel-left-well.transitioning.animation-scale,
+.panel-right-content.transitioning.animation-scale {
+  opacity: 0;
+  transform: skewX(8deg) scale(0.9);
+}
+
+/* None/Instant Animation */
+.panel-left-well.animation-none,
+.panel-right-content.animation-none {
+  transition: none;
+  opacity: 1;
+}
+
+.panel-left-well.transitioning.animation-none,
+.panel-right-content.transitioning.animation-none {
+  opacity: 1; /* No fade out */
+}
+
