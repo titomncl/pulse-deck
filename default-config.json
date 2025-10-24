@@ -11,37 +11,25 @@
     "progressBarFillEnd": "#004d73",
     "accentColor": "#9146ff"
   },
-  "youtubeChannel": {
-    "url": "",
-    "latestVideoTitle": "Latest Stream Highlights",
-    "latestVideoDate": "10/12/2025"
+  "youtube": {
+    "apiKey": "",
+    "channelId": ""
   },
-  "chatCommands": [
-    {
-      "name": "!discord",
-      "description": "Join our Discord server",
-      "emote": "discord.png"
-    },
-    {
-      "name": "!vod",
-      "description": "Watch latest stream",
-      "emote": "vod.png"
-    }
-  ],
   "elements": [
     {
       "id": "followerGoal",
       "type": "progress",
       "enabled": true,
       "title": "Follower Goal",
-      "subtitle": "",
       "emote": "follower.png",
       "zIndex": 1,
+      "animation": "fadeIn",
       "dataSource": "twitch.followers",
       "fields": {
         "goal": 200,
         "current": 0,
-        "showPercentage": true
+        "showPercentage": true,
+        "subtext": ""
       }
     },
     {
@@ -49,14 +37,15 @@
       "type": "progress",
       "enabled": true,
       "title": "Subscriber Goal",
-      "subtitle": "",
       "emote": "subscriber.png",
       "zIndex": 2,
+      "animation": "slideLeft",
       "dataSource": "twitch.subscribers",
       "fields": {
         "goal": 500,
         "current": 0,
-        "showPercentage": true
+        "showPercentage": true,
+        "subtext": ""
       }
     },
     {
@@ -64,14 +53,15 @@
       "type": "counter",
       "enabled": true,
       "title": "Total Donations",
-      "subtitle": "Thank you for your support!",
       "emote": "donation.png",
       "zIndex": 3,
+      "animation": "slideUp",
       "dataSource": "custom.donations",
       "fields": {
         "value": 0,
         "prefix": "$",
-        "suffix": ""
+        "suffix": "",
+        "subtext": "Thank you for your support!"
       }
     },
     {
@@ -79,13 +69,26 @@
       "type": "list",
       "enabled": true,
       "title": "Chat Commands",
-      "subtitle": "",
       "emote": "",
       "zIndex": 4,
-      "dataSource": "config.chatCommands",
+      "animation": "fadeIn",
+      "dataSource": "none",
       "fields": {
         "maxItemsToShow": 3,
-        "showAsCarousel": true
+        "showAsCarousel": true,
+        "subtext": "",
+        "items": [
+          {
+            "name": "!discord",
+            "description": "Join our Discord server",
+            "emote": "discord.png"
+          },
+          {
+            "name": "!vod",
+            "description": "Watch latest stream",
+            "emote": "vod.png"
+          }
+        ]
       }
     },
     {
@@ -93,14 +96,14 @@
       "type": "info",
       "enabled": true,
       "title": "Latest VOD",
-      "subtitle": "Type !vod or !youtube in chat",
       "emote": "🎬",
       "zIndex": 5,
+      "animation": "scale",
       "dataSource": "twitch.vods",
       "fields": {
         "showThumbnail": false,
         "text": "Latest Stream Highlights",
-        "subtext": ""
+        "subtext": "Type !vod or !youtube in chat"
       }
     }
   ]
