@@ -129,6 +129,42 @@ function Display() {
     return () => clearInterval(interval)
   }, [authState])
 
+  // 5.5. Fetch YouTube data
+  useEffect(() => {
+    if (!config?.youtube?.channelId) return // Only channelId is required, apiKey is optional
+
+    const fetchYouTubeData = async () => {
+      try {
+        // Build URL with optional apiKey parameter
+        const apiKey = config.youtube.apiKey || ''
+        // Always fetch latest video (index 0) for display page
+        const url = `/api/youtube/latest-video?channelId=${encodeURIComponent(config.youtube.channelId)}${apiKey ? `&apiKey=${encodeURIComponent(apiKey)}` : ''}&videoIndex=0`
+        
+        const response = await fetch(url)
+        const videoData = await response.json()
+        
+        if (videoData.error) {
+          console.error('YouTube API error:', videoData.error)
+          return
+        }
+        
+        setData(prev => ({
+          ...prev,
+          youtube: {
+            latest: videoData
+          }
+        }))
+      } catch (error) {
+        console.error('Error fetching YouTube data:', error)
+      }
+    }
+
+    fetchYouTubeData()
+    // Fetch every 5 minutes
+    const interval = setInterval(fetchYouTubeData, 300000)
+    return () => clearInterval(interval)
+  }, [config?.youtube?.apiKey, config?.youtube?.channelId])
+
   // 6. Auto-rotate steps
   useEffect(() => {
     if (!config) return
@@ -189,26 +225,41 @@ function Display() {
 
   const renderCurrentStep = () => {
     const enabledSteps = getEnabledSteps()
-    if (enabledSteps.length === 0) return null
+    if (enabledSteps.length === 0) {
+      return (
+        <div className="display-empty-state">
+          <div className="empty-message">
+            <h2>👋 Welcome to Pulse Deck!</h2>
+            <p>No elements are currently enabled.</p>
+            <p>Go to <a href="/customize">/customize</a> to add overlay elements.</p>
+          </div>
+        </div>
+      )
+    }
     
     const step = enabledSteps[currentStep]
     const colors = config.colors || {}
+    const animation = step.element?.animation || 'fadeIn' // Default animation
     
     // Handle carousel items (individual list items)
     if (step.type === 'carouselItem') {
       const item = step.item
       return (
         <SlantedPanel
-          emote={item.emote || step.element.emote || "�"}
+          emote={item.emote || step.element.emote || "📋"}
           title={item.name || item.title || "Item"}
           colors={colors}
+          animation={animation}
+          isTransitioning={isTransitioning}
+          emoteSize={step.element.emoteSize || 100}
+          displayDuration={config.rotationDuration || 5000}
           content={
             <div className="panel-single-command">
               <div className="panel-command-description">{item.description || item.text || ''}</div>
               {item.subtext && <div className="panel-command-subtext">{item.subtext}</div>}
             </div>
           }
-          subtitle={step.element.subtitle || ''}
+          subtitle={step.element.fields?.subtext || ''}
         />
       )
     }
@@ -222,6 +273,9 @@ function Display() {
         followers: { current: data.followers.current },
         subscribers: { current: data.subscribers.current },
         vods: { text: data.vod.title, subtext: data.vod.date }
+      },
+      youtube: {
+        latest: data.youtube?.latest || { text: 'No video found', subtext: '', thumbnail: null }
       },
       custom: {
         donations: { value: data.donations.total }
@@ -242,6 +296,10 @@ function Display() {
         emote={rendered.emote}
         title={rendered.title}
         colors={colors}
+        animation={animation}
+        isTransitioning={isTransitioning}
+        emoteSize={rendered.emoteSize || 100}
+        displayDuration={config.rotationDuration || 5000}
         content={rendered.content}
         subtitle={rendered.subtitle}
       />
@@ -267,7 +325,7 @@ function Display() {
 
   return (
     <div className="display-container">
-      <div className={`display-panel-wrapper ${isTransitioning ? 'transitioning' : ''} transition-${config.transitionAnimation || 'fadeSlide'}`}>
+      <div className="display-panel-wrapper">
         {renderCurrentStep()}
       </div>
     </div>
