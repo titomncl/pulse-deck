@@ -44,6 +44,45 @@ A dynamic, customizable streaming overlay built for OBS that runs locally on the
 
 ---
 
+## v0.1.1 - Critical Fixes & UX (November 2025)
+
+**Focus:** Fix blocking bugs and simplify workflows from v0.1.0 feedback
+
+### Critical (P0) - Must Fix
+- [ ] **Refactor animation system** - Move from global to per-element (6-8hrs)
+  - Animations should apply to element content only, not entire overlay
+  - Each element type has customizable animation settings
+  - Keep overlay background/border static
+- [ ] Fix blank page on localhost:3000 without refresh (30min)
+- [ ] Fix subtitle not working in Progress Bar elements (15min)
+- [ ] Fix donation amount display bug in Counter elements (1hr)
+
+### High Priority (P1) - UX Blockers
+- [ ] Implement emote import button with file picker (3-4hrs)
+  - Auto-copy images to /public/emotes/
+  - Auto-update emotes.json
+  - Validate formats (PNG, JPG, GIF, WebP)
+- [ ] Fix empty emote dropdown showing placeholder items (30min)
+- [ ] Refactor Chat Commands to per-element instead of Settings (2hrs) ⚠️ BREAKING
+- [ ] Redesign element selection UI - Click to select, checkbox for visibility (1hr)
+
+### Medium Priority (P2) - Polish
+- [ ] Center emotes vertically in panels (15min)
+- [ ] Remove duplicate subtitle/subtext field in Manual elements (30min) ⚠️ BREAKING
+- [ ] Move VOD channel URL from Settings to per-element (1hr) ⚠️ BREAKING
+- [ ] Implement YouTube API for latest non-short video (3-4hrs)
+- [ ] Fix subtext wrapping to prevent horizontal stretch (15min)
+- [ ] Add image format documentation (PNG, JPG, GIF, WebP) (5min)
+
+### Low Priority (P3) - Defer to v0.2
+- [ ] Font size customization per element (1-2hrs)
+
+**Breaking Changes:** Migration function required for chat commands, VOD URL, animations, subtitle/subtext  
+**Total Estimated Time:** ~23.5 hours  
+**See:** FEEDBACK_v0.1.1.md for detailed issue tracking
+
+---
+
 ## 🚀 PHASE 1: UI/UX Polish (High Priority)
 
 ### Immediate Improvements
