@@ -8,6 +8,7 @@ function Preview({
   currentStep, 
   previewData, 
   previewConfig,
+  youtubeData,
   onNextStep,
   onPrevStep 
 }) {
@@ -15,22 +16,27 @@ function Preview({
     if (!config || !step) return null
     
     const colors = config.colors || {}
+    const animation = step.element?.animation || 'fadeIn'
     
     // Handle carousel items (individual list items)
     if (step.type === 'carouselItem') {
       const item = step.item
       return (
         <SlantedPanel
-          emote={item.emote || step.element.emote || "�"}
+          emote={item.emote || step.element.emote || "📋"}
           title={item.name || item.title || "Item"}
           colors={colors}
+          animation={animation}
+          isTransitioning={false}
+          emoteSize={step.element.emoteSize || 100}
+          displayDuration={config?.rotationDuration || 5000}
           content={
             <div className="panel-single-command">
               <div className="panel-command-description">{item.description || item.text || ''}</div>
               {item.subtext && <div className="panel-command-subtext">{item.subtext}</div>}
             </div>
           }
-          subtitle={step.element.subtitle || ''}
+          subtitle={step.element.fields?.subtext || ''}
         />
       )
     }
@@ -44,6 +50,9 @@ function Preview({
         followers: { current: previewData.followers.current },
         subscribers: { current: previewData.subscribers.current },
         vods: { text: previewData.vod.title, subtext: previewData.vod.date }
+      },
+      youtube: youtubeData || {
+        latest: { text: 'Latest YouTube Video', subtext: 'Preview mode', thumbnail: null }
       },
       custom: {
         donations: { value: previewData.donations.total }
@@ -64,6 +73,10 @@ function Preview({
         emote={rendered.emote}
         title={rendered.title}
         colors={colors}
+        animation={animation}
+        isTransitioning={false}
+        emoteSize={rendered.emoteSize || 100}
+        displayDuration={config?.rotationDuration || 5000}
         content={rendered.content}
         subtitle={rendered.subtitle}
       />
