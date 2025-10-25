@@ -65,45 +65,33 @@
       }
     },
     {
-      "id": "chatCommands",
-      "type": "list",
+      "id": "discord",
+      "type": "info",
       "enabled": true,
-      "title": "Chat Commands",
-      "emote": "",
+      "title": "!discord",
+      "emote": "📋",
       "zIndex": 4,
       "animation": "fadeIn",
       "dataSource": "none",
       "fields": {
-        "maxItemsToShow": 3,
-        "showAsCarousel": true,
-        "subtext": "",
-        "items": [
-          {
-            "name": "!discord",
-            "description": "Join our Discord server",
-            "emote": "💬"
-          },
-          {
-            "name": "!vod",
-            "description": "Watch latest stream",
-            "emote": "🎬"
-          }
-        ]
+        "text": "Join our Community on Discord!",
+        "subtext": "Use this command in chat to get the link",
+        "showThumbnail": false
       }
     },
     {
-      "id": "latestVOD",
+      "id": "latestVideo",
       "type": "info",
       "enabled": true,
-      "title": "Latest VOD",
+      "title": "Latest YouTube Video",
       "emote": "🎬",
       "zIndex": 5,
       "animation": "scale",
-      "dataSource": "twitch.vods",
+      "dataSource": "youtube.latestVideo",
       "fields": {
-        "showThumbnail": false,
-        "text": "Latest Stream Highlights",
-        "subtext": "Type !vod or !youtube in chat"
+        "showThumbnail": true,
+        "text": "Latest YouTube Video",
+        "subtext": "Type !youtube in chat"
       }
     }
   ]

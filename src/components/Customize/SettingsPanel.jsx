@@ -39,9 +39,7 @@ export default function SettingsPanel({
         <input
           type="text"
           value={previewConfig.youtube?.channelId || previewConfig.youtubeChannel?.channelId || ""}
-          onChange={(e) =>
-            updatePreviewGlobal({ youtube: { ...previewConfig.youtube, channelId: e.target.value } })
-          }
+          onChange={(e) => updatePreviewGlobal({ youtube: { ...previewConfig.youtube, channelId: e.target.value } })}
           placeholder="UCxxx... (Channel ID)"
         />
         <small>
@@ -179,8 +177,6 @@ export default function SettingsPanel({
           />
         </div>
       </div>
-
-      
     </div>
   );
 }
