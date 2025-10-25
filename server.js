@@ -27,6 +27,9 @@ const OVERLAY_TOKEN_TTL_HOURS = Number(process.env.OVERLAY_TOKEN_TTL_HOURS || 16
 app.use(express.json({ limit: "10mb" }));
 app.use(express.static(join(__dirname, "dist")));
 
+// Serve uploaded emotes directly at /emotes/<filename>
+app.use('/emotes', express.static(join(__dirname, 'public', 'emotes')));
+
 // Config storage
 let overlayConfig = null;
 const CONFIG_FILE = join(__dirname, "overlay-config.json");
