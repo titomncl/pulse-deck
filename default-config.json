@@ -21,7 +21,7 @@
       "type": "progress",
       "enabled": true,
       "title": "Follower Goal",
-      "emote": "follower.png",
+      "emote": "👥",
       "zIndex": 1,
       "animation": "fadeIn",
       "dataSource": "twitch.followers",
@@ -37,7 +37,7 @@
       "type": "progress",
       "enabled": true,
       "title": "Subscriber Goal",
-      "emote": "subscriber.png",
+      "emote": "⭐",
       "zIndex": 2,
       "animation": "slideLeft",
       "dataSource": "twitch.subscribers",
@@ -53,7 +53,7 @@
       "type": "counter",
       "enabled": true,
       "title": "Total Donations",
-      "emote": "donation.png",
+      "emote": "💰",
       "zIndex": 3,
       "animation": "slideUp",
       "dataSource": "custom.donations",
@@ -81,12 +81,12 @@
           {
             "name": "!discord",
             "description": "Join our Discord server",
-            "emote": "discord.png"
+            "emote": "💬"
           },
           {
             "name": "!vod",
             "description": "Watch latest stream",
-            "emote": "vod.png"
+            "emote": "🎬"
           }
         ]
       }
