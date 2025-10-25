@@ -33,41 +33,24 @@ export default function SettingsPanel({
         </div>
       </div>
 
-      <h3>YouTube Integration</h3>
+      <h3>YouTube Channel</h3>
       <div className="control-group">
-        <label>
-          YouTube API Key <span className="optional-label">(optional but recommended)</span>
-        </label>
-        <input
-          type="password"
-          value={previewConfig.youtube?.apiKey || ""}
-          onChange={(e) => updatePreviewGlobal({ youtube: { ...previewConfig.youtube, apiKey: e.target.value } })}
-          placeholder="Your YouTube Data API v3 key"
-        />
-        <small>
-          <strong>With API key:</strong> Can filter out YouTube Shorts ✅
-          <br />
-          <strong>Without API key:</strong> Uses RSS feed (may include Shorts) ⚠️
-          <br />
-          Get your free API key from{" "}
-          <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">
-            Google Cloud Console
-          </a>
-        </small>
-      </div>
-
-      <div className="control-group">
-        <label>YouTube Channel ID or URL</label>
+        <label>YouTube Channel ID</label>
         <input
           type="text"
-          value={previewConfig.youtube?.channelId || ""}
-          onChange={(e) => updatePreviewGlobal({ youtube: { ...previewConfig.youtube, channelId: e.target.value } })}
-          placeholder="UCxxx... or youtube.com/@yourhandle"
+          value={previewConfig.youtube?.channelId || previewConfig.youtubeChannel?.channelId || ""}
+          onChange={(e) =>
+            updatePreviewGlobal({ youtube: { ...previewConfig.youtube, channelId: e.target.value } })
+          }
+          placeholder="UCxxx... (Channel ID)"
         />
         <small>
-          <strong>With API key:</strong> Accepts Channel ID, @handle, or URL
+          Please paste your Channel ID (looks like <code>UCxxxxxxxxxxxxxxxx</code>).
           <br />
-          <strong>Without API key:</strong> Requires Channel ID (UCxxx...) only
+          You can find it on your YouTube Advanced account settings:&nbsp;
+          <a href="https://www.youtube.com/account_advanced" target="_blank" rel="noopener noreferrer">
+            https://www.youtube.com/account_advanced
+          </a>
         </small>
       </div>
 
@@ -197,19 +180,7 @@ export default function SettingsPanel({
         </div>
       </div>
 
-      <h3>YouTube Channel</h3>
-      <div className="control-group">
-        <label>Channel URL</label>
-        <input
-          type="url"
-          value={previewConfig.youtubeChannel?.url || ""}
-          onChange={(e) =>
-            updatePreviewGlobal({ youtubeChannel: { ...previewConfig.youtubeChannel, url: e.target.value } })
-          }
-          placeholder="https://youtube.com/@yourchannel"
-        />
-        <small>Latest video will be automatically fetched (feature coming soon)</small>
-      </div>
+      
     </div>
   );
 }
