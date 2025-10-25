@@ -462,5 +462,5 @@ Want to help? Priority areas:
 ---
 
 **Last Updated**: October 24, 2025
-**Current Version**: 0.1.0 (Alpha)
-**Next Release**: 0.2.0 (UI Polish & Import/Export)
+**Current Version**: 0.3.0 (Alpha)
+**Next Release**: 0.4.0 (UI Polish & Import/Export)

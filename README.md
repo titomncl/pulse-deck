@@ -2,19 +2,19 @@
 
 > _A self-hosted dynamic overlay builder for Twitch — real-time sync, full customization, zero cloud dependencies._
 
-**v0.2.0** - More polish, improved UX, and per-element animations. Build beautiful overlays faster with finer control over visuals and behavior.
+**v0.3.0** - More polish, improved UX, and per-element animations. Build beautiful overlays faster with finer control over visuals and behavior.
 
 [![Status](https://img.shields.io/badge/status-alpha-orange)]()
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)]()
+[![Version](https://img.shields.io/badge/version-0.3.0-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-orange)]()
 [![React](https://img.shields.io/badge/React-18-61dafb?logo=react)]()
 [![Express](https://img.shields.io/badge/Express-4-000000?logo=express)]()
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite)]()
 
-![Pulse Deck](https://via.placeholder.com/800x200/9146ff/ffffff?text=Pulse+Deck+v0.2)
+![Pulse Deck](https://via.placeholder.com/800x200/9146ff/ffffff?text=Pulse+Deck+v0.3)
 _⚠️ Visual coming soon - this is a placeholder_
 
-## ✨ Highlights in v0.2.0
+## ✨ Highlights in v0.3.0
 
 - per-element animations: choose how each element enters and exits (fade, slides, scale, or none)
 - emote & thumbnail improvements: centered square cropping with rounded corners and a live size slider for fine control
@@ -726,7 +726,7 @@ Special thanks to:
 
 ## -## 📊 Project Stats
 
-- **Version**: 0.2.0 (Alpha)
+- **Version**: 0.3.0 (Alpha)
 - **Last Updated**: October 24, 2025
 - **Lines of Code**: ~3,500
 - **Elements You Can Create**: Unlimited! 🚀
