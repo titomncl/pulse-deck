@@ -1,5 +1,6 @@
 import React from "react";
-import ListItemEditor from "./ListItemEditor";
+// List items editor previously supported "list" elements. That element type was removed from the defaults
+// and editor UI; keep the file in repo for backward compatibility but do not import it here.
 
 export default function ElementEditor({
   element,
@@ -28,7 +29,6 @@ export default function ElementEditor({
         >
           <option value="progress">Progress Bar (Goals)</option>
           <option value="counter">Counter (Numbers)</option>
-          <option value="list">List (Commands, etc.)</option>
           <option value="info">Info (Text & Image)</option>
           <option value="custom">Custom HTML</option>
         </select>
@@ -47,85 +47,79 @@ export default function ElementEditor({
       </div>
 
       {/* Title Size */}
-      {element.type !== "list" && (
-        <div className="control-group">
-          <label>Title Size: {element.titleSize || 24}px</label>
-          <input
-            type="range"
-            min="12"
-            max="72"
-            step="1"
-            value={element.titleSize || 24}
-            onChange={(e) => updatePreviewElement(element.id, { titleSize: parseInt(e.target.value) })}
-            className="title-size-slider"
-          />
-          <small>Adjust the title font size (px)</small>
-        </div>
-      )}
-
-      {/* Subtext (optional) */}
       <div className="control-group">
-        <label>Subtitle (optional)</label>
+        <label>Title Size: {element.titleSize || 24}px</label>
+        <input
+          type="range"
+          min="12"
+          max="72"
+          step="1"
+          value={element.titleSize || 24}
+          onChange={(e) => updatePreviewElement(element.id, { titleSize: parseInt(e.target.value) })}
+          className="title-size-slider"
+        />
+        <small>Adjust the title font size (px)</small>
+      </div>
+
+      {/* Caption / small footer text (optional) - appears below the main body */}
+      <div className="control-group">
+        <label>Caption (optional)</label>
         <input
           type="text"
           value={element.fields?.subtext || ""}
           onChange={(e) => updatePreviewElement(element.id, { fields: { ...element.fields, subtext: e.target.value } })}
-          placeholder="Additional text below content"
+          placeholder="Small caption shown below the main line"
         />
-        <small>Appears below the main content</small>
+        <small>Appears below the main line as a small caption (grey)</small>
       </div>
 
-      {/* Subtitle Size - placed directly under subtext it controls */}
-      {element.type !== "list" && (
-        <div className="control-group">
-          <label>Subtitle Size: {element.subtitleSize || 16}px</label>
-          <input
-            type="range"
-            min="10"
-            max="48"
-            step="1"
-            value={element.subtitleSize || 16}
-            onChange={(e) => updatePreviewElement(element.id, { subtitleSize: parseInt(e.target.value) })}
-            className="subtitle-size-slider"
-          />
-          <small>Adjust the subtitle font size (px)</small>
-        </div>
-      )}
+      {/* Caption Size - controls the small footer text font */}
+      <div className="control-group">
+        <label>Caption Size: {element.subtitleSize || 16}px</label>
+        <input
+          type="range"
+          min="8"
+          max="36"
+          step="1"
+          value={element.subtitleSize || 16}
+          onChange={(e) => updatePreviewElement(element.id, { subtitleSize: parseInt(e.target.value) })}
+          className="subtitle-size-slider"
+        />
+        <small>Adjust the caption (small text) font size (px)</small>
+      </div>
 
       {/* Emote - hidden for List type as each item has its own */}
-      {element.type !== "list" && (
-        <div className="control-group">
-          <label>Emote / Icon</label>
-          {availableEmotes.length > 0 ? (
-            <div className="emote-picker">
-              <div className="emote-picker-grid">
-                {availableEmotes.map((emote) => (
-                  <div
-                    key={emote}
-                    className={`emote-picker-item ${element.emote === emote ? "selected" : ""}`}
-                    onClick={() => updatePreviewElement(element.id, { emote: emote })}
-                    title={emote}
-                  >
-                    <img src={`/emotes/${emote}`} alt={emote} className="emote-picker-preview" />
-                  </div>
-                ))}
-              </div>
+      <div className="control-group">
+        <label>Emote / Icon</label>
+        {availableEmotes.length > 0 ? (
+          <div className="emote-picker">
+            <div className="emote-picker-grid">
+              {availableEmotes.map((emote) => (
+                <div
+                  key={emote}
+                  className={`emote-picker-item ${element.emote === emote ? "selected" : ""}`}
+                  onClick={() => updatePreviewElement(element.id, { emote: emote })}
+                  title={emote}
+                >
+                  <img src={`/emotes/${emote}`} alt={emote} className="emote-picker-preview" />
+                </div>
+              ))}
             </div>
-          ) : (
-            <div className="empty-emotes-message">
-              No emotes imported yet. Go to Settings → Emote Library to import emotes.
-            </div>
-          )}
+          </div>
+        ) : (
+          <div className="empty-emotes-message">
+            No emotes imported yet. Go to Settings → Emote Library to import emotes.
+          </div>
+        )}
 
-          <input
-            type="text"
-            value={element.emote || ""}
-            onChange={(e) => updatePreviewElement(element.id, { emote: e.target.value })}
-            placeholder="emoji (👥) or filename (logo.png)"
-          />
-          <small>Click emote above or enter emoji/filename manually</small>
-        </div>
-      )}
+        <input
+          type="text"
+          value={element.emote || ""}
+          onChange={(e) => updatePreviewElement(element.id, { emote: e.target.value })}
+          placeholder="emoji (👥) or filename (logo.png)"
+        />
+        <small>Click emote above or enter emoji/filename manually</small>
+      </div>
 
       {/* Emote/Icon Size Control */}
       <div className="control-group">
@@ -241,72 +235,34 @@ export default function ElementEditor({
         </>
       )}
 
-      {element.type === "list" && (
-        <>
-          <div className="control-group">
-            <label>Maximum Items to Show</label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={element.fields?.maxItemsToShow || 3}
-              onChange={(e) =>
-                updatePreviewElement(element.id, {
-                  fields: { ...element.fields, maxItemsToShow: parseInt(e.target.value) || 3 },
-                })
-              }
-            />
-          </div>
-
-          <div className="control-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={element.fields?.showAsCarousel !== false}
-                onChange={(e) =>
-                  updatePreviewElement(element.id, { fields: { ...element.fields, showAsCarousel: e.target.checked } })
-                }
-              />{" "}
-              Show as Carousel (one item at a time)
-            </label>
-          </div>
-
-          {(!element.dataSource || element.dataSource === "none") && (
-            <>
-              <h4>List Items</h4>
-              <div className="list-items-editor">
-                {(element.fields?.items || []).map((item, index) => (
-                  <ListItemEditor
-                    key={index}
-                    elementId={element.id}
-                    item={item}
-                    index={index}
-                    availableEmotes={availableEmotes}
-                    updateListItem={updateListItem}
-                    deleteListItem={deleteListItem}
-                  />
-                ))}
-                <button onClick={() => addListItem(element.id)} className="add-list-item-btn">
-                  ➕ Add List Item
-                </button>
-              </div>
-            </>
-          )}
-        </>
-      )}
+      {/* 'list' element type has been removed - list-specific controls are no longer available */}
 
       {element.type === "info" && (
         <>
           <div className="control-group">
-            <label>Description</label>
+            <label>Subtitle (main line)</label>
             <input
               type="text"
               value={element.fields?.text || ""}
               onChange={(e) =>
                 updatePreviewElement(element.id, { fields: { ...element.fields, text: e.target.value } })
               }
-              placeholder="Main text content"
+              placeholder="Text shown between the title and caption"
             />
+          </div>
+
+          <div className="control-group">
+            <label>Subtitle Size: {element.descriptionSize || 20}px</label>
+            <input
+              type="range"
+              min="10"
+              max="48"
+              step="1"
+              value={element.descriptionSize || 20}
+              onChange={(e) => updatePreviewElement(element.id, { descriptionSize: parseInt(e.target.value) })}
+              className="description-size-slider"
+            />
+            <small>Adjust the subtitle (main line) font size (px)</small>
           </div>
 
           <div className="control-group">
