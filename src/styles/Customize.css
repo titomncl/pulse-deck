@@ -354,7 +354,7 @@
   border: 2px solid #3d3d3d;
   border-radius: 4px;
   color: #ffffff;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 12px;
 }
 
@@ -747,7 +747,7 @@
 
 .command-name-input {
   flex: 1;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-weight: 600;
 }
 
@@ -859,6 +859,37 @@
   transform: scale(1.1);
 }
 
+/* Duplicate element button: match project's button styling (compact full-width) */
+.duplicate-element-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.duplicate-element-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.28);
+}
+
+.duplicate-element-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .button-group {
   display: flex;
   gap: 8px;
@@ -907,7 +938,7 @@
   color: #ffffff;
   border: 2px solid #3d3d3d;
   border-radius: 6px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 13px;
   resize: vertical;
 }
@@ -1115,4 +1146,3 @@
   object-fit: contain;
   border-radius: 4px;
 }
-
