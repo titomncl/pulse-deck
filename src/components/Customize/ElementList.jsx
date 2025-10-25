@@ -7,6 +7,7 @@ export default function ElementList({
   updatePreviewElement,
   deleteElement,
   addNewElement,
+  duplicateElement,
 }) {
   return (
     <div className="elements-list">
@@ -44,6 +45,14 @@ export default function ElementList({
       ))}
       <button onClick={addNewElement} className="add-element-btn">
         + Add New Element
+      </button>
+      <button
+        onClick={() => duplicateElement && duplicateElement(selectedElement)}
+        className="duplicate-element-btn"
+        disabled={!selectedElement}
+        title={selectedElement ? "Duplicate selected element" : "Select an element to duplicate"}
+      >
+        ⧉ Duplicate Selected
       </button>
     </div>
   );

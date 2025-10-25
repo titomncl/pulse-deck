@@ -179,6 +179,29 @@ export default function Customize() {
     setSelectedElement(newId);
   };
 
+  const duplicateElement = (elementId) => {
+    if (!previewConfig || !elementId) return;
+    const elements = Array.isArray(previewConfig.elements) ? [...previewConfig.elements] : [];
+    const idx = elements.findIndex((el) => el.id === elementId);
+    if (idx === -1) return;
+    const original = elements[idx];
+    // Deep clone the element
+    const clone = JSON.parse(JSON.stringify(original));
+    const newId = `${original.id}_copy_${Date.now().toString(36)}`;
+    clone.id = newId;
+    clone.title = clone.title ? `Copy of ${clone.title}` : `Copy ${newId}`;
+    // Ensure zIndex places it at the end
+    clone.zIndex = (elements.length || 0) + 1;
+    // Insert right after original
+    elements.splice(idx + 1, 0, clone);
+    const newConfig = { ...previewConfig, elements };
+    setPreviewConfigState(newConfig);
+    try {
+      setPreviewConfig(newConfig);
+    } catch (e) {}
+    setSelectedElement(newId);
+  };
+
   const deleteElement = (elementId) => {
     if (!previewConfig) return;
     if (!confirm("Are you sure you want to delete this element?")) return;
@@ -403,6 +426,7 @@ export default function Customize() {
               updatePreviewElement={updatePreviewElement}
               deleteElement={deleteElement}
               addNewElement={addNewElement}
+              duplicateElement={duplicateElement}
             />
             {selectedEl ? (
               <ElementEditor
@@ -421,6 +445,17 @@ export default function Customize() {
               <div className="no-selection">Select an element to edit</div>
             )}
           </>
+        )}
+
+        {activeTab === "settings" && (
+          <SettingsPanel
+            previewConfig={previewConfig}
+            updatePreviewGlobal={updatePreviewGlobal}
+            availableEmotes={availableEmotes}
+            handleEmoteUpload={handleEmoteUpload}
+            handleDeleteEmote={handleDeleteEmote}
+            loadAvailableEmotes={loadAvailableEmotes}
+          />
         )}
 
         <div className="action-buttons">
