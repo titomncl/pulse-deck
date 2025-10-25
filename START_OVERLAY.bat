@@ -3,7 +3,7 @@ title Pulse Deck - Stream Overlay
 color 0D
 echo.
 echo ================================
-echo   PULSE DECK v0.1.0
+echo   PULSE DECK v0.3.0
 echo ================================
 echo.
 
@@ -30,9 +30,9 @@ if not exist "node_modules\" (
 REM Check if dist folder exists (build required)
 if not exist "dist\" (
     echo [!] Build folder not found...
-    echo [*] Building application... This may take a minute.
+    echo [*] Building application with 'npx vite build'... This may take a minute.
     echo.
-    call npm run build
+    call npx vite build
     if errorlevel 1 (
         echo.
         echo [ERROR] Failed to build application!

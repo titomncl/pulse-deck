@@ -8,7 +8,7 @@ NC='\033[0m' # No Color
 clear
 
 echo -e "${BLUE}================================${NC}"
-echo -e "${GREEN}  STREAM OVERLAY v2.0${NC}"
+echo -e "${GREEN}  STREAM OVERLAY v0.3.0${NC}"
 echo -e "${BLUE}================================${NC}"
 echo ""
 echo "Starting server..."
@@ -33,6 +33,18 @@ if [ ! -d "node_modules" ]; then
     echo ""
     echo "Installation complete!"
     echo ""
+fi
+
+# Check if a production build is present; if not, run npx vite build
+if [ ! -d "dist" ]; then
+    echo "Build folder not found. Running 'npx vite build'..."
+    npx vite build
+    if [ $? -ne 0 ]; then
+        echo "[ERROR] Build failed"
+        read -p "Press Enter to exit..."
+        exit 1
+    fi
+    echo "Build complete"
 fi
 
 # Start the server
