@@ -194,6 +194,9 @@ const renderInfoElement = (element, data, colors) => {
   // Use thumbnail as emote if showThumbnail is enabled and thumbnail exists
   const emote = showThumbnail ? data.thumbnail : element.emote || "ℹ️";
 
+  // For Info elements we return the main body as `content` and expose the
+  // `subtitle` separately. SlantedPanel will render the subtitle once, so
+  // avoid duplicating subtext inside the content area.
   return {
     emote: emote,
     title: element.title || "Info",
@@ -205,17 +208,11 @@ const renderInfoElement = (element, data, colors) => {
         >
           {text}
         </div>
-        {subtext && (
-          <div
-            className="panel-vod-date"
-            style={element.subtitleSize ? { fontSize: `${element.subtitleSize}px` } : { fontSize: "16px" }}
-          >
-            {subtext}
-          </div>
-        )}
       </div>
     ),
-    subtitle: fields.subtext || "",
+    // Expose subtext as subtitle so the panel component renders it in the
+    // designated subtitle area (no duplication).
+    subtitle: subtext,
     emoteSize: element.emoteSize || 100,
   };
 };
@@ -328,6 +325,36 @@ export const migrateOldConfig = (oldConfig) => {
         migrated.fields.subtext = "";
       }
 
+      // If an element was of type 'list', convert it into an 'info' element
+      // so older user configs that used lists will still display sensibly.
+      if (migrated.type === "list") {
+        const items = Array.isArray(migrated.fields?.items) ? migrated.fields.items : [];
+
+        // Build a compact text summary from items (use name/title/description)
+        const itemNames = items.map((it) => it?.name || it?.title || it?.description || "").filter(Boolean);
+
+        const text = itemNames.length > 0 ? itemNames.join(" • ") : migrated.fields?.text || "List of items";
+
+        migrated = {
+          ...migrated,
+          type: "info",
+          emote: migrated.emote || "📋",
+          fields: {
+            // Place a human-readable summary in the info's text field
+            text,
+            subtext: migrated.fields?.subtext || "",
+            showThumbnail: false,
+          },
+        };
+      }
+
+      // Ensure common size/default properties exist so rendering code can read them safely
+      migrated.titleSize = migrated.titleSize || 24;
+      migrated.subtitleSize = migrated.subtitleSize || 16;
+      migrated.descriptionSize = migrated.descriptionSize || 20;
+      migrated.emoteSize = migrated.emoteSize || 100;
+      if (migrated.enabled === undefined) migrated.enabled = true;
+
       return migrated;
     });
 
@@ -398,20 +425,27 @@ export const migrateOldConfig = (oldConfig) => {
     }
 
     if (oldElements.chatCommands) {
+      // Convert legacy chatCommands list into an info element with summary text
+      const cmds = Array.isArray(oldConfig.chatCommands) ? oldConfig.chatCommands : [];
+      const summary =
+        cmds
+          .map((c) => c?.name || c?.title || c?.description || "")
+          .filter(Boolean)
+          .join(" • ") || "Chat commands";
       newElements.push({
         id: "chatCommands",
-        type: "list",
+        type: "info",
         enabled: oldElements.chatCommands.enabled,
         title: "Chat Commands",
         subtitle: "",
-        emote: "",
+        emote: "📋",
         zIndex: oldElements.chatCommands.zIndex || 4,
         animation: "fadeIn",
         dataSource: "none",
         fields: {
-          maxItemsToShow: oldElements.chatCommands.maxCommandsToShow || 3,
-          showAsCarousel: true,
-          items: oldConfig.chatCommands || [],
+          text: summary,
+          subtext: "",
+          showThumbnail: false,
         },
       });
     }
