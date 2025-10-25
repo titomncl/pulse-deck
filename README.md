@@ -79,6 +79,31 @@ npm run dev
 npm start
 ```
 
+## ⚙️ Environment (.env)
+
+Pulse Deck reads runtime configuration from a `.env` file located at the project root. For safety, do **not** commit real secrets — copy the example file and edit it locally:
+
+1. Copy the example file:
+
+  ```bash
+  cp .env.example .env
+  ```
+
+2. Edit `.env` and restart the server.
+
+Key variables (placeholders are shown in `.env.example`):
+
+- `PULSE_DECK_SECRET` — a random secret used to derive the encryption key for stored credentials. Use a long, random value (recommended 32+ bytes).
+- `ALLOW_REMOTE_CONFIG_WRITES` — `false` by default; set to `true` only if you intentionally allow remote write operations and understand the risk.
+- `CONFIG_API_KEY` — optional API key used to authorize certain write operations and trusted callers.
+- `OVERLAY_TOKEN_TTL_HOURS` — how long generated OBS tokens remain valid (default `168` = 7 days).
+- `PORT` — the HTTP server port (default `3000`).
+- `WS_PORT` — the WebSocket server port (default `3001`).
+- `VITE_TWITCH_CLIENT_ID` — Twitch Client ID for the frontend (prefixed with `VITE_` for Vite).
+- `VITE_TWITCH_REDIRECT_URI` — OAuth redirect URI used by the Twitch app (e.g. `http://localhost:3000/auth/callback`).
+
+After editing `.env`, restart the server to apply changes. Keep the `.env` file local and never commit client secrets or API keys to source control.
+
 ---
 
 ## 🔒 Security & Privacy
