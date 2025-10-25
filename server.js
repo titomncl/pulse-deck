@@ -104,6 +104,23 @@ const verifyConfigWriteAccess = (req, res, next) => {
   } catch (err) {
     console.warn("⚠️  Could not load auth tokens file:", err.message);
   }
+
+  // Ensure emotes directory and emotes.json exist without overwriting user data
+  try {
+    const emotesDir = join(__dirname, "public", "emotes");
+    const emotesJsonPath = join(emotesDir, "emotes.json");
+    await fsp.mkdir(emotesDir, { recursive: true });
+
+    // Only create emotes.json if it doesn't already exist. Do NOT overwrite existing file.
+    if (!fs.existsSync(emotesJsonPath)) {
+      await fsp.writeFile(emotesJsonPath, JSON.stringify([], null, 2), "utf-8");
+      console.log("✅ Bootstrapped empty emotes.json");
+    } else {
+      console.log("ℹ️  emotes.json already exists, leaving user data intact");
+    }
+  } catch (err) {
+    console.warn("⚠️  Could not ensure emotes storage:", err.message);
+  }
 })();
 
 // API endpoint to generate UUID token for OBS
