@@ -1,111 +1,188 @@
-import { useState, useEffect } from 'react'
-import { setTwitchApiKey, setTwitchClientId, getTwitchClientId } from '../config'
-import { validateCredentials } from '../api'
-import '../styles/ApiKeyPrompt.css'
+import { useState, useEffect } from "react";
+import { setTwitchApiKey, setTwitchClientId, getTwitchClientId } from "../config";
+import { validateCredentials } from "../api";
+import "../styles/ApiKeyPrompt.css";
 
-// Your Twitch App Client ID - Users need to create their own app
-// or you can provide a default one for your application
-const DEFAULT_CLIENT_ID = '6bajjbnteigawashvki5svvsfetrxl' // Replace with your actual Client ID
+// We'll fetch the runtime client ID from the server so OBS/browser sources
+// always get the value from the server-side .env (no rebuild required).
+// If the server doesn't provide a value, the UI will prompt for manual entry.
+// Keep an optional fallback to import.meta.env in case the app is running in dev mode.
+const STATIC_CLIENT_ID = import.meta?.env?.VITE_TWITCH_CLIENT_ID || "";
 
 function ApiKeyPrompt({ onComplete }) {
-  const [clientId, setClientIdState] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [showManualInput, setShowManualInput] = useState(false)
+  const [clientId, setClientIdState] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
 
+  // Try to obtain clientId from the server via WebSocket first, then fall back to HTTP
   useEffect(() => {
-    // Load saved client ID if available
-    const savedClientId = getTwitchClientId()
-    if (savedClientId) {
-      setClientIdState(savedClientId)
-    }
+    const attemptWs = () => {
+      return new Promise((resolve) => {
+        try {
+          const host = window.location.hostname || "localhost";
+          const port = import.meta?.env?.VITE_WS_PORT || 3001;
+          const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+          const url = `${protocol}://${host}:${port}`;
+          const socket = new WebSocket(url);
+          const timer = setTimeout(() => {
+            try {
+              socket.close();
+            } catch (e) {}
+            resolve(false);
+          }, 1500);
 
-    // Check if we have a token in the URL hash (OAuth redirect)
-    const hash = window.location.hash.substring(1)
-    console.log('URL Hash:', hash) // Debug log
-    
-    if (hash) {
-      const params = new URLSearchParams(hash)
-      const accessToken = params.get('access_token')
-      console.log('Access Token found:', accessToken ? 'Yes' : 'No') // Debug log
-      
-      if (accessToken) {
-        // Also save client ID from hash if present
-        const tokenClientId = savedClientId || DEFAULT_CLIENT_ID
-        if (tokenClientId) {
-          setTwitchClientId(tokenClientId)
+          socket.onopen = () => {
+            socket.send(JSON.stringify({ type: "HELLO", role: "obs" }));
+            // If an obs token is present in the URL (e.g., ?token=UUID), send it to authenticate
+            try {
+              const params = new URLSearchParams(window.location.search);
+              const tokenParam = params.get("token");
+              if (tokenParam) {
+                socket.send(JSON.stringify({ type: "AUTH", token: tokenParam }));
+              }
+            } catch (e) {}
+          };
+
+          socket.onmessage = (ev) => {
+            try {
+              const msg = JSON.parse(ev.data);
+              if (msg.type === "ENV" && msg.clientId) {
+                setClientIdState(msg.clientId);
+                setTwitchClientId(msg.clientId);
+                clearTimeout(timer);
+                try {
+                  socket.close();
+                } catch (e) {}
+                resolve(true);
+              }
+
+              if (msg.type === "AUTH_REQUIRED") {
+                clearTimeout(timer);
+                try {
+                  socket.close();
+                } catch (e) {}
+                resolve(false);
+              }
+            } catch (e) {
+              // ignore
+            }
+          };
+
+          socket.onerror = () => {
+            clearTimeout(timer);
+            try {
+              socket.close();
+            } catch (e) {}
+            resolve(false);
+          };
+        } catch (err) {
+          resolve(false);
         }
-        
-        handleOAuthCallback(accessToken)
+      });
+    };
+
+    const fetchPublicEnv = async () => {
+      try {
+        const resp = await fetch("/api/public-env");
+        if (resp.ok) {
+          const json = await resp.json();
+          if (json?.clientId) {
+            setClientIdState(json.clientId);
+            setTwitchClientId(json.clientId);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch public env:", err);
       }
-    }
-  }, [])
+    };
+
+    (async () => {
+      const wsOk = await attemptWs();
+      if (!wsOk) await fetchPublicEnv();
+
+      // Load saved client ID if available
+      const savedClientId = getTwitchClientId();
+      if (savedClientId) setClientIdState(savedClientId);
+
+      // Check for OAuth implicit flow token in hash
+      const hash = window.location.hash.substring(1);
+      if (hash) {
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get("access_token");
+        if (accessToken) {
+          const tokenClientId = getTwitchClientId() || STATIC_CLIENT_ID || "";
+          if (tokenClientId) setTwitchClientId(tokenClientId);
+          handleOAuthCallback(accessToken);
+        }
+      }
+    })();
+  }, []);
 
   const handleOAuthCallback = async (accessToken) => {
-    console.log('Starting OAuth callback handling...') // Debug log
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError("");
 
     try {
-      // Save the access token
-      setTwitchApiKey(accessToken)
-      console.log('Access token saved to localStorage') // Debug log
-      
-      // Validate the token
-      console.log('Validating credentials...') // Debug log
-      const isValid = await validateCredentials()
-      console.log('Validation result:', isValid) // Debug log
-
+      setTwitchApiKey(accessToken);
+      const isValid = await validateCredentials();
       if (isValid) {
-        console.log('Credentials valid! Completing setup...') // Debug log
-        // Clear the hash from URL
-        window.history.replaceState(null, null, window.location.pathname)
-        onComplete()
+        window.history.replaceState(null, null, window.location.pathname);
+        onComplete();
       } else {
-        setError('Invalid access token received from Twitch')
+        setError("Invalid access token received from Twitch");
       }
     } catch (err) {
-      setError(`Failed to validate Twitch credentials: ${err.message}`)
-      console.error('OAuth callback error:', err)
+      setError(`Failed to validate Twitch credentials: ${err.message}`);
+      console.error("OAuth callback error:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleTwitchConnect = () => {
-    const clientIdToUse = clientId || DEFAULT_CLIENT_ID
-    
-    if (!clientIdToUse || clientIdToUse === 'YOUR_CLIENT_ID_HERE') {
-      setError('Please enter your Twitch Client ID first')
-      setShowManualInput(true)
-      return
+  const handleTwitchConnect = async () => {
+    // Prefer server-provided client id (saved to localStorage earlier), then any manual entry,
+    // then static build-time client id as last resort.
+    const serverClientId = getTwitchClientId();
+    const clientIdToUse = serverClientId || clientId || STATIC_CLIENT_ID;
+
+    if (!clientIdToUse) {
+      setError("Server did not provide a Client ID. Please set VITE_TWITCH_CLIENT_ID in .env or use manual setup.");
+      setShowManualInput(true);
+      return;
     }
 
-    // Save client ID before redirect
-    setTwitchClientId(clientIdToUse)
-    console.log('Client ID saved:', clientIdToUse) // Debug log
+    setTwitchClientId(clientIdToUse);
 
-    // OAuth parameters - ensure exact match with registered URI
-    const redirectUri = 'http://localhost:3000'
-    const responseType = 'token'
-    const scope = 'channel:read:subscriptions moderator:read:followers'
-    
-    // Construct auth URL
-    const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${clientIdToUse}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`
-    
-    console.log('Redirecting to:', authUrl) // Debug log
-    console.log('Redirect URI:', redirectUri) // Debug log
-    
-    window.location.href = authUrl
-  }
+    // Determine redirect URI (prefer runtime-provided)
+    let redirectUri = window.location.origin;
+    try {
+      const resp = await fetch("/api/public-env");
+      if (resp.ok) {
+        const { redirectUri: srvRedirect } = await resp.json();
+        if (srvRedirect) redirectUri = srvRedirect;
+      }
+    } catch (err) {
+      // ignore
+    }
+
+    const responseType = "token";
+    const scope = "channel:read:subscriptions moderator:read:followers";
+
+    const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${clientIdToUse}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
+
+    window.location.href = authUrl;
+  };
 
   const handleClientIdSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (clientId.trim()) {
-      setTwitchClientId(clientId)
-      setShowManualInput(false)
+      setTwitchClientId(clientId);
+      setShowManualInput(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -117,7 +194,7 @@ function ApiKeyPrompt({ onComplete }) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -125,29 +202,22 @@ function ApiKeyPrompt({ onComplete }) {
       <div className="api-key-prompt">
         <h2>Connect with Twitch</h2>
         <p className="description">
-          Authorize this overlay to access your Twitch channel data.
-          We'll need permission to read your follower and subscriber counts.
+          Authorize this overlay to access your Twitch channel data. We'll need permission to read your follower and
+          subscriber counts.
         </p>
 
         {!showManualInput ? (
           <>
             {error && <div className="error-message">{error}</div>}
-            
-            <button 
-              className="twitch-connect-btn" 
-              onClick={handleTwitchConnect}
-              disabled={loading}
-            >
+
+            <button className="twitch-connect-btn" onClick={handleTwitchConnect} disabled={loading}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
               </svg>
               Connect with Twitch
             </button>
 
-            <button 
-              className="manual-setup-link"
-              onClick={() => setShowManualInput(true)}
-            >
+            <button className="manual-setup-link" onClick={() => setShowManualInput(true)}>
               Use custom Client ID
             </button>
           </>
@@ -170,12 +240,8 @@ function ApiKeyPrompt({ onComplete }) {
             <button type="submit" className="submit-btn">
               Save Client ID
             </button>
-            
-            <button 
-              type="button"
-              className="back-btn"
-              onClick={() => setShowManualInput(false)}
-            >
+
+            <button type="button" className="back-btn" onClick={() => setShowManualInput(false)}>
               Back
             </button>
           </form>
@@ -184,13 +250,29 @@ function ApiKeyPrompt({ onComplete }) {
         <div className="help-section">
           <h3>First time setup:</h3>
           <ol>
-            <li>Go to the <a href="https://dev.twitch.tv/console/apps" target="_blank" rel="noopener noreferrer">Twitch Developer Console</a></li>
+            <li>
+              Go to the{" "}
+              <a href="https://dev.twitch.tv/console/apps" target="_blank" rel="noopener noreferrer">
+                Twitch Developer Console
+              </a>
+            </li>
             <li>Click "Register Your Application"</li>
-            <li>Fill in the details:
+            <li>
+              Fill in the details:
               <ul>
-                <li><strong>Name:</strong> Stream Overlay (or any name)</li>
-                <li><strong>OAuth Redirect URLs:</strong> <code>{window.location.origin}{window.location.pathname}</code></li>
-                <li><strong>Category:</strong> Broadcasting Suite</li>
+                <li>
+                  <strong>Name:</strong> Stream Overlay (or any name)
+                </li>
+                <li>
+                  <strong>OAuth Redirect URLs:</strong>{" "}
+                  <code>
+                    {window.location.origin}
+                    {window.location.pathname}
+                  </code>
+                </li>
+                <li>
+                  <strong>Category:</strong> Broadcasting Suite
+                </li>
               </ul>
             </li>
             <li>Click "Create" and copy your Client ID</li>
@@ -200,7 +282,7 @@ function ApiKeyPrompt({ onComplete }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default ApiKeyPrompt
+export default ApiKeyPrompt;
