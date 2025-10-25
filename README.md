@@ -1,6 +1,6 @@
 # Pulse Deck
 
-> *A self-hosted dynamic overlay builder for Twitch — real-time sync, full customization, zero cloud dependencies.*
+> _A self-hosted dynamic overlay builder for Twitch — real-time sync, full customization, zero cloud dependencies._
 
 **v0.2.0** - More polish, improved UX, and per-element animations. Build beautiful overlays faster with finer control over visuals and behavior.
 
@@ -12,7 +12,7 @@
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite)]()
 
 ![Pulse Deck](https://via.placeholder.com/800x200/9146ff/ffffff?text=Pulse+Deck+v0.2)
-*⚠️ Visual coming soon - this is a placeholder*
+_⚠️ Visual coming soon - this is a placeholder_
 
 ## ✨ Highlights in v0.2.0
 
@@ -31,21 +31,25 @@ these changes focus on polish and usability: better visuals, predictable preview
 ### For Streamers (No Coding Required!)
 
 1. **Download Pulse Deck**
+
    - Go to [Releases](https://github.com/titomncl/pulse-deck/releases)
    - Download `pulse-deck-v0.1.0.zip`
    - Extract the ZIP file to your desired location
 
 2. **Install Node.js** (if you don't have it)
+
    - Download from [nodejs.org](https://nodejs.org/) (choose LTS version 18+)
    - Run the installer and follow the prompts
    - Restart your computer after installation (if asked)
 
 3. **Start Pulse Deck**
+
    - **Windows:** Run `START_OVERLAY.bat`
    - **macOS/Linux:** Run `start_overlay.sh`
    - Wait for automatic setup (first time only)
 
 4. **Configure Your Overlay**
+
    - In the browser of your choice, go to `http://localhost:3000/customize`
    - Click "Connect with Twitch" to authorize
    - Add elements, customize colors, save your setup
@@ -85,9 +89,9 @@ Pulse Deck reads runtime configuration from a `.env` file located at the project
 
 1. Copy the example file:
 
-  ```bash
-  cp .env.example .env
-  ```
+```bash
+cp .env.example .env
+```
 
 2. Edit `.env` and restart the server.
 
@@ -109,6 +113,7 @@ After editing `.env`, restart the server to apply changes. Keep the `.env` file 
 ## 🔒 Security & Privacy
 
 **Your data stays local.** Pulse Deck:
+
 - ✅ Stores all credentials locally on your machine
 - ✅ Never transmits tokens to third-party servers
 - ✅ Uses UUID-based authentication for OBS links
@@ -121,11 +126,13 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 ## 🌍 Platform Compatibility
 
 **Tested and stable on:**
+
 - ✅ Windows 10/11 (64-bit)
 - ✅ macOS Monterey, Ventura, Sonoma (Intel & Apple Silicon)
 - ✅ Linux (Ubuntu 20.04+, Debian 11+)
 
 **Requirements:**
+
 - Node.js 18+ (LTS recommended)
 - 500MB free disk space
 - Modern web browser (Chrome, Firefox, Edge, Safari)
@@ -135,32 +142,37 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 ## 🎯 Features
 
 ### 🎨 Dynamic Elements System
+
 **Dynamic freedom:** Add unlimited elements with full customization—no code required.
 
 **Five ready-made types:**
+
 - 📊 **Progress** - Goal tracking with visual progress bars (followers, subs, donations)
 - 🔢 **Counter** - Numbers with customizable prefix/suffix (viewers, points, currency)
 - 📋 **List** - Multiple items shown as carousel or grid (commands, socials, schedules)
 - ℹ️ **Info** - Text and image panels (announcements, latest VOD, info cards)
 - ⚙️ **Custom** - Advanced users can inject HTML/CSS for unique designs
-  
+
 ### 💾 Configuration Management
+
 **Never lose your setup:** Save your perfect overlay layout and restore it anytime.
 
 - **Save as Default** - Create your personal default configuration
 - **Reset Options** - Restore to your saved default or factory settings
-- **Import/Export** - Share configs with other streamers *(coming in v0.2)*
-- **Version Control** - Track changes and rollback if needed *(coming in v0.3)*
+- **Import/Export** - Share configs with other streamers _(coming in v0.2)_
+- **Version Control** - Track changes and rollback if needed _(coming in v0.3)_
 
 ### 🔗 Data Sources
+
 **Connect your stream data:** Choose where each element gets its information.
 
 - **Twitch API** - Live follower/subscriber counts (requires API setup)
 - **Config-based** - Static data like chat commands, social links
 - **Manual** - Set custom values that you control
-- **Custom** - Advanced: Integrate external APIs *(examples coming in v0.2)*
+- **Custom** - Advanced: Integrate external APIs _(examples coming in v0.2)_
 
 ### 🎬 OBS Integration
+
 **Seamless live updates:** Changes sync to OBS instantly—no refresh needed.
 
 - **WebSocket sync** - Real-time updates without lag
@@ -169,6 +181,7 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 - **Multiple instances** - Use different overlay configs per OBS scene
 
 ### 🎨 Full Customization
+
 **Make it yours:** Complete visual control over every element.
 
 - **Color themes** - Match your brand colors
@@ -184,6 +197,7 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 ### Setup Instructions
 
 1. **Create Twitch Developer Application**
+
    - Go to https://dev.twitch.tv/console/apps
    - Click "Register Your Application"
    - Name: "Pulse Deck" (or your choice)
@@ -192,12 +206,14 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
    - Save your **Client ID** and **Client Secret**
 
 2. **Connect Your Twitch Account**
+
    - Open `http://localhost:3000/customize` in your browser (NOT in OBS)
    - Click "**Connect with Twitch**" button
    - Authorize Pulse Deck to access your data
    - Your credentials are stored securely in browser localStorage
 
 3. **Generate OBS Browser URL**
+
    - Click "**🔗 Generate OBS URL**" button
    - A unique URL with UUID is created
    - Server links your Twitch data to this UUID
@@ -209,10 +225,11 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
    - Live counts will update automatically!
 
 **Supported Twitch Data:**
+
 - Follower count (real-time)
 - Subscriber count (real-time)
 - Latest VOD information
-- Stream status *(coming in v0.2)*
+- Stream status _(coming in v0.2)_
 
 **Note:** The UUID in your OBS URL is for uniqueness, not security. Anyone with the URL can view your overlay, but URLs are hard to guess.
 
@@ -221,6 +238,7 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 ## 📖 Documentation
 
 ### For Users
+
 - **Quick Setup** - See [Quick Start](#-quick-start-5-minutes) above
 - **Adding Elements** - Click "+ Add New Element" in customize page
 - **Editing Elements** - Click any element in the list to modify
@@ -228,6 +246,7 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 - **OBS Setup** - Generate secure URL and add as Browser Source
 
 ### For Developers
+
 - **Architecture** - React 18 frontend + Express backend + WebSocket real-time sync
 - **Config Format** - JSON-based array of element objects
 - **API Endpoints** - RESTful config management with `/api/config/*` routes
@@ -239,7 +258,9 @@ Your Twitch API credentials and overlay configs are stored in local JSON files t
 ## 🎮 Use Cases & Examples
 
 ### Stream Goals
+
 Create a follower goal tracker that updates live:
+
 ```json
 {
   "type": "progress",
@@ -251,10 +272,13 @@ Create a follower goal tracker that updates live:
   }
 }
 ```
+
 ![Follower Goal Example](https://via.placeholder.com/400x100/9146ff/ffffff?text=Follower+Goal+Example)
 
 ### Donation Counter
+
 Track total donations with custom currency:
+
 ```json
 {
   "type": "counter",
@@ -267,7 +291,9 @@ Track total donations with custom currency:
 ```
 
 ### Chat Commands
+
 Display available commands as a rotating carousel:
+
 ```json
 {
   "type": "list",
@@ -281,7 +307,9 @@ Display available commands as a rotating carousel:
 ```
 
 ### Social Links
+
 Show all your social media:
+
 ```json
 {
   "type": "list",
@@ -294,7 +322,9 @@ Show all your social media:
 ```
 
 ### Custom Announcements
+
 Advanced HTML for special events:
+
 ```json
 {
   "type": "custom",
@@ -321,6 +351,7 @@ Advanced HTML for special events:
 ## 📦 Installation Methods
 
 ### Current Method (Developers & Power Users)
+
 ```bash
 git clone https://github.com/titomncl/pulse-deck
 cd pulse-deck
@@ -331,7 +362,9 @@ npm start
 ### Coming Soon: Easy Installation
 
 #### 🪟 Windows Installer (.exe) - v0.5
+
 **One-click installation for streamers**
+
 - Auto-install with setup wizard
 - Auto-start with Windows option
 - System tray application
@@ -339,14 +372,18 @@ npm start
 - Clean uninstallation
 
 #### 🍎 macOS App Bundle (.app) - v0.6
+
 **Native macOS experience**
+
 - DMG installer with drag-to-Applications
 - Code signed for Gatekeeper
 - Menu bar application
 - Auto-updater built-in
 
 #### 📦 Portable Version - v0.5
+
 **No installation needed**
+
 - Single folder with everything included
 - Run from USB stick or external drive
 - Perfect for testing before installing
@@ -393,9 +430,11 @@ See [todo.md](./todo.md) for the complete roadmap with technical details.
 ## 🎨 Element Types Reference
 
 ### 📊 Progress Bar
+
 **Perfect for tracking goals** - Visual progress indicator with percentage display
 
 **Fields:**
+
 - Current value (manual entry or live from Twitch API)
 - Goal target (numeric)
 - Show percentage (yes/no toggle)
@@ -404,6 +443,7 @@ See [todo.md](./todo.md) for the complete roadmap with technical details.
 **Best for:** Follower goals, subscriber milestones, donation goals, event countdowns
 
 **Example Use:**
+
 ```
 Current: 847 followers
 Goal: 1000 followers
@@ -413,9 +453,11 @@ Display: "847 / 1000 (85%)" with animated progress bar
 ---
 
 ### 🔢 Counter
+
 **Display any number** - Simple numeric display with optional formatting
 
 **Fields:**
+
 - Value (manual or automated)
 - Prefix (e.g., $, €, #)
 - Suffix (e.g., pts, viewers, hours)
@@ -424,6 +466,7 @@ Display: "847 / 1000 (85%)" with animated progress bar
 **Best for:** Donation totals, viewer count, death counters, custom metrics
 
 **Example Use:**
+
 ```
 Prefix: "$"
 Value: 1,234.50
@@ -434,9 +477,11 @@ Display: "$1,234.50"
 ---
 
 ### 📋 List
+
 **Show multiple items** - Flexible list display with carousel mode
 
 **Fields:**
+
 - Items array (manual list)
 - Max items to show simultaneously
 - Carousel mode (rotate one at a time)
@@ -445,6 +490,7 @@ Display: "$1,234.50"
 **Best for:** Chat commands (!discord, !socials), stream schedules, social links, sponsor shoutouts
 
 **Example Use:**
+
 ```
 Items: ["!discord - Join our community", "!twitter - @yourhandle", "!youtube - YourChannel"]
 Mode: Carousel
@@ -454,9 +500,11 @@ Speed: 5 seconds per item
 ---
 
 ### ℹ️ Info
+
 **Simple text/image display** - Information panel with optional thumbnail
 
 **Fields:**
+
 - Main text (headline)
 - Subtext (description)
 - Show thumbnail (yes/no)
@@ -466,6 +514,7 @@ Speed: 5 seconds per item
 **Best for:** Latest VOD, announcements, sponsor cards, upcoming streams
 
 **Example Use:**
+
 ```
 Main: "Last Stream: Elden Ring Finale"
 Subtext: "Watch the VOD on YouTube!"
@@ -476,28 +525,24 @@ Link: https://youtube.com/watch?v=...
 ---
 
 ### ⚙️ Custom
+
 **For advanced users** - Full HTML/CSS control for unique designs
 
 **Fields:**
+
 - HTML content (raw HTML)
 - Custom CSS (scoped styles)
-- JavaScript support *(coming in v0.4)*
+- JavaScript support _(coming in v0.4)_
 
 **Best for:** Special effects, animated graphics, integration with external APIs, unique brand designs
 
 **Example Use:**
+
 ```html
 HTML:
-<div class="rainbow-text">
-  🌈 PRIDE MONTH SPECIAL 🌈
-</div>
+<div class="rainbow-text">🌈 PRIDE MONTH SPECIAL 🌈</div>
 
-CSS:
-.rainbow-text {
-  animation: rainbow 3s infinite;
-  font-size: 28px;
-}
-@keyframes rainbow { /* gradient animation */ }
+CSS: .rainbow-text { animation: rainbow 3s infinite; font-size: 28px; } @keyframes rainbow { /* gradient animation */ }
 ```
 
 ---
@@ -505,6 +550,7 @@ CSS:
 ## 🔧 Configuration
 
 ### Config File Structure
+
 ```json
 {
   "rotationDuration": 5000,
@@ -540,7 +586,7 @@ CSS:
       "dataSource": "manual",
       "zIndex": 2,
       "fields": {
-        "value": 1234.50,
+        "value": 1234.5,
         "prefix": "$",
         "suffix": ""
       }
@@ -551,14 +597,14 @@ CSS:
 
 ### Data Sources Reference
 
-| Source | Description | Requirements |
-|--------|-------------|--------------|
-| `none` | Manual values only | None |
-| `twitch.followers` | Live follower count | Twitch API credentials |
-| `twitch.subscribers` | Live subscriber count | Twitch API credentials |
-| `twitch.vods` | Latest VOD info | Twitch API credentials |
-| `config.chatCommands` | Command list from config | None |
-| `custom.donations` | External donation tracking | API integration |
+| Source                | Description                | Requirements           |
+| --------------------- | -------------------------- | ---------------------- |
+| `none`                | Manual values only         | None                   |
+| `twitch.followers`    | Live follower count        | Twitch API credentials |
+| `twitch.subscribers`  | Live subscriber count      | Twitch API credentials |
+| `twitch.vods`         | Latest VOD info            | Twitch API credentials |
+| `config.chatCommands` | Command list from config   | None                   |
+| `custom.donations`    | External donation tracking | API integration        |
 
 ---
 
@@ -567,6 +613,7 @@ CSS:
 We welcome contributions! Here are the areas where help is most needed:
 
 ### 🔥 High Priority
+
 1. **Windows Installer** - Most requested by users (pkg + NSIS experience needed)
 2. **UI/UX Improvements** - Always valuable (React/CSS skills)
 3. **Bug Fixes** - Check [Issues](https://github.com/titomncl/pulse-deck/issues) tab
@@ -574,6 +621,7 @@ We welcome contributions! Here are the areas where help is most needed:
 5. **Element Templates** - Share your creative overlay designs
 
 ### Development Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/titomncl/pulse-deck
@@ -596,6 +644,7 @@ npm test
 ```
 
 ### Pull Request Guidelines
+
 - Follow existing code style
 - Add tests for new features
 - Update documentation
@@ -617,24 +666,28 @@ Copyright (c) 2025 [Your Name]
 ### Common Issues
 
 **❌ Elements not showing in OBS?**
+
 - ✅ Check element is enabled (checkbox in customize page)
 - ✅ Verify OBS Browser Source URL is correct
 - ✅ Ensure dimensions are set to 1920x1080
 - ✅ Look for errors in OBS's browser console (right-click source → Interact)
 
 **❌ OBS not updating when I make changes?**
+
 - ✅ Check server is running (`npm start`)
 - ✅ Verify WebSocket connection (check browser console: F12)
 - ✅ Try refreshing the OBS Browser Source
 - ✅ Regenerate OBS URL if it's been more than 7 days
 
 **❌ Twitch data not loading?**
+
 - ✅ Confirm Client ID and Client Secret are entered correctly
 - ✅ Check token hasn't expired (regenerate if needed)
 - ✅ Verify your Twitch app has correct redirect URLs
 - ✅ Check network connection and firewall settings
 
 **❌ Server won't start?**
+
 - ✅ Ensure Node.js 18+ is installed (`node --version`)
 - ✅ Check if port 3000 is already in use
 - ✅ Try deleting `node_modules` and run `npm install` again
@@ -654,6 +707,7 @@ Copyright (c) 2025 [Your Name]
 **Built with love for the streaming community** ❤️
 
 Special thanks to:
+
 - The React team for an amazing framework
 - Express.js for reliable server infrastructure
 - Vite for lightning-fast development experience
@@ -661,6 +715,7 @@ Special thanks to:
 - All our contributors and testers
 
 **Open Source Libraries:**
+
 - [React](https://react.dev/) - UI framework
 - [Express](https://expressjs.com/) - Web server
 - [Vite](https://vitejs.dev/) - Build tool
@@ -669,8 +724,8 @@ Special thanks to:
 
 ---
 
--## 📊 Project Stats
--
+## -## 📊 Project Stats
+
 - **Version**: 0.2.0 (Alpha)
 - **Last Updated**: October 24, 2025
 - **Lines of Code**: ~3,500
@@ -683,26 +738,31 @@ Special thanks to:
 ## 🎯 Why Pulse Deck?
 
 ### 🏠 Local & Private
+
 Your data never leaves your computer. No cloud dependencies, no tracking, complete privacy.
 
 ### ⚡ Real-Time Updates
+
 Changes sync to OBS instantly via WebSocket. Edit while streaming without interruptions.
 
 ### 🎨 Unlimited Creativity
+
 Not limited to preset elements. Create anything you can imagine with custom HTML/CSS.
 
 ### 💰 100% Free
+
 Open source forever. No subscriptions, no hidden costs, no premium tiers.
 
 ### 🔧 Developer-Friendly
+
 Clean codebase, well-documented, easy to extend. Built by developers, for developers.
 
 ---
 
-**Ready to create your perfect overlay?** 
+**Ready to create your perfect overlay?**
 
 👉 **[Get Started Now](#-quick-start-5-minutes)** 🚀
 
 ---
 
-*Made with 💜 by streamers, for streamers*
+_Made with 💜 by streamers, for streamers_

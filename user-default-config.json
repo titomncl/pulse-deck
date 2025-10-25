@@ -69,7 +69,7 @@
       "type": "list",
       "enabled": true,
       "title": "Chat Commands",
-      "emote": "",
+      "emote": "💬",
       "zIndex": 4,
       "animation": "fadeIn",
       "dataSource": "none",
@@ -81,12 +81,12 @@
           {
             "name": "!discord",
             "description": "Join our Discord server",
-            "emote": "💬"
+            "emote": ""
           },
           {
             "name": "!vod",
             "description": "Watch latest stream",
-            "emote": "🎬"
+            "emote": ""
           }
         ]
       }
