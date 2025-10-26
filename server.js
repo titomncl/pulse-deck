@@ -74,9 +74,17 @@ const decryptObject = (record) => {
   }
 };
 
+// Normalize IP addresses for consistent comparisons (handle IPv4-mapped IPv6 and ::1)
+const normalizeIp = (raw) => {
+  if (!raw) return "";
+  let ip = String(raw).replace("::ffff:", "");
+  if (ip === "::1") return "127.0.0.1";
+  return ip;
+};
+
 const isLocalRequest = (req) => {
-  const ip = (req.ip || req.connection?.remoteAddress || "").replace("::ffff:", "");
-  return ip === "127.0.0.1" || ip === "::1" || ip === "0.0.0.0";
+  const ip = normalizeIp(req.ip || req.connection?.remoteAddress || "");
+  return ip === "127.0.0.1" || ip === "0.0.0.0";
 };
 
 const verifyConfigWriteAccess = (req, res, next) => {
@@ -139,15 +147,18 @@ app.post("/api/auth/generate", verifyConfigWriteAccess, async (req, res) => {
   const createdAt = new Date().toISOString();
   const expiresAt = new Date(Date.now() + OVERLAY_TOKEN_TTL_HOURS * 3600 * 1000).toISOString();
 
-  const requesterIp = (req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || "").replace(
-    "::ffff:",
-    ""
-  );
+  const requesterIp = normalizeIp(req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || "");
 
   // Bind token to requesting IP by default to reduce token theft risk. Caller may pass bindToRequester: false to opt out.
   const bindToRequester = req.body?.bindToRequester !== false;
   const encrypted = encryptObject({ clientId, apiKey });
-  authTokens[uuid] = { createdAt, expiresAt, secret: encrypted, ...(bindToRequester ? { boundIp: requesterIp } : {}) };
+  // Store the normalized bound IP when binding is requested
+  authTokens[uuid] = {
+    createdAt,
+    expiresAt,
+    secret: encrypted,
+    ...(bindToRequester ? { boundIp: requesterIp } : {}),
+  };
 
   try {
     await fsp.writeFile(AUTH_FILE, JSON.stringify(authTokens, null, 2), "utf-8");
@@ -157,7 +168,7 @@ app.post("/api/auth/generate", verifyConfigWriteAccess, async (req, res) => {
   }
 
   const obsUrl = `http://localhost:${PORT}/?token=${uuid}`;
-  console.log(`🔑 Generated auth token: ${uuid}`);
+  console.log(`🔑 Generated auth token: ${uuid} (boundIp: ${requesterIp || "none"})`);
 
   // Only return metadata, never raw credentials
   res.json({
@@ -189,10 +200,7 @@ const isAuthTokenValid = (uuid, req) => {
   if (!record) return false;
   if (record.expiresAt && new Date(record.expiresAt) < new Date()) return false;
   if (record.boundIp) {
-    const requesterIp = (req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || "").replace(
-      "::ffff:",
-      ""
-    );
+    const requesterIp = normalizeIp(req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || "");
     if (requesterIp !== record.boundIp) return false;
   }
   return true;
@@ -745,10 +753,9 @@ server.listen(PORT, () => {
 const wss = new WebSocketServer({ port: WS_PORT });
 
 wss.on("connection", (ws, req) => {
-  const remoteAddr = (req.socket?.remoteAddress || "").replace("::ffff:", "");
+  const remoteAddr = normalizeIp(req.socket?.remoteAddress || "");
   const hasApiKeyHeader = CONFIG_API_KEY && req.headers && req.headers["x-overlay-api-key"] === CONFIG_API_KEY;
-  const trustedConn =
-    ALLOW_REMOTE_CONFIG_WRITES || remoteAddr === "127.0.0.1" || remoteAddr === "::1" || hasApiKeyHeader;
+  const trustedConn = ALLOW_REMOTE_CONFIG_WRITES || remoteAddr === "127.0.0.1" || hasApiKeyHeader;
 
   console.log("🔌 WebSocket client connected", remoteAddr, trustedConn ? "(trusted)" : "(untrusted)");
 
@@ -790,17 +797,63 @@ wss.on("connection", (ws, req) => {
         }
         case "AUTH": {
           // { type: 'AUTH', apiKey?: '...', token?: '...' }
-          if (msg.apiKey && CONFIG_API_KEY && msg.apiKey === CONFIG_API_KEY) {
-            ws.send(JSON.stringify(envPayload));
-            break;
+          try {
+            const incomingIp = normalizeIp(req.socket?.remoteAddress || "");
+            console.log(`🔐 WS AUTH attempt from ${incomingIp} - apiKey:${!!msg.apiKey} token:${!!msg.token}`);
+
+            if (msg.apiKey && CONFIG_API_KEY && msg.apiKey === CONFIG_API_KEY) {
+              console.log("🔐 WS AUTH succeeded via CONFIG_API_KEY header");
+              // If authenticated via CONFIG_API_KEY, send ENV (no decrypted apiKey available)
+              ws.send(JSON.stringify(envPayload));
+              break;
+            }
+
+            if (msg.token) {
+              const record = authTokens[msg.token];
+              if (!record) {
+                console.log(`🔐 WS AUTH failed: token not found: ${msg.token}`);
+                ws.send(JSON.stringify({ type: "ERROR", message: "unauthorized" }));
+                break;
+              }
+
+              console.log(`🔐 WS AUTH token record.boundIp=${record.boundIp || "none"} expiresAt=${record.expiresAt}`);
+
+              if (isAuthTokenValid(msg.token, req)) {
+                console.log(`🔐 WS AUTH succeeded for token ${msg.token}`);
+                // Decrypt stored secret and include it in the ENV payload so the
+                // authenticated client (OBS) can receive both clientId and apiKey
+                // and populate its localStorage automatically. This only sends the
+                // decrypted secret to a client that proved possession of the UUID
+                // token.
+                try {
+                  const secret = decryptObject(record.secret) || {};
+                  const envWithSecret = {
+                    type: "ENV",
+                    clientId: secret.clientId || process.env.VITE_TWITCH_CLIENT_ID || null,
+                    redirectUri: process.env.VITE_TWITCH_REDIRECT_URI || null,
+                    apiKey: secret.apiKey || null,
+                  };
+                  ws.send(JSON.stringify(envWithSecret));
+                } catch (err) {
+                  console.warn("⚠️ Error sending decrypted secret over WS:", err);
+                  ws.send(JSON.stringify(envPayload));
+                }
+                break;
+              } else {
+                console.log(`🔐 WS AUTH token validation failed for ${msg.token} (incomingIp=${incomingIp})`);
+                ws.send(JSON.stringify({ type: "ERROR", message: "unauthorized" }));
+                break;
+              }
+            }
+
+            ws.send(JSON.stringify({ type: "ERROR", message: "unauthorized" }));
+          } catch (err) {
+            console.warn("⚠️  Error during AUTH handling:", err);
+            try {
+              ws.send(JSON.stringify({ type: "ERROR", message: "unauthorized" }));
+            } catch (e) {}
           }
 
-          if (msg.token && isAuthTokenValid(msg.token, req)) {
-            ws.send(JSON.stringify(envPayload));
-            break;
-          }
-
-          ws.send(JSON.stringify({ type: "ERROR", message: "unauthorized" }));
           break;
         }
         case "REQUEST_ENV": {
@@ -811,7 +864,20 @@ wss.on("connection", (ws, req) => {
           }
 
           if (msg.token && isAuthTokenValid(msg.token, req)) {
-            ws.send(JSON.stringify(envPayload));
+            const record = authTokens[msg.token];
+            try {
+              const secret = decryptObject(record.secret) || {};
+              ws.send(
+                JSON.stringify({
+                  type: "ENV",
+                  clientId: secret.clientId || process.env.VITE_TWITCH_CLIENT_ID || null,
+                  redirectUri: process.env.VITE_TWITCH_REDIRECT_URI || null,
+                  apiKey: secret.apiKey || null,
+                })
+              );
+            } catch (err) {
+              ws.send(JSON.stringify(envPayload));
+            }
             break;
           }
 

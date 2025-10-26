@@ -2,8 +2,6 @@
 
 > _A self-hosted dynamic overlay builder for Twitch — real-time sync, full customization, zero cloud dependencies._
 
-**v0.3.0** - More polish, improved UX, and per-element animations. Build beautiful overlays faster with finer control over visuals and behavior.
-
 [![Status](https://img.shields.io/badge/status-alpha-orange)]()
 [![Version](https://img.shields.io/badge/version-0.3.0-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-orange)]()
@@ -11,20 +9,9 @@
 [![Express](https://img.shields.io/badge/Express-4-000000?logo=express)]()
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite)]()
 
-![Pulse Deck](https://via.placeholder.com/800x200/9146ff/ffffff?text=Pulse+Deck+v0.3)
-_⚠️ Visual coming soon - this is a placeholder_
+<!-- ![Pulse Deck](https://via.placeholder.com/800x200/9146ff/ffffff?text=Pulse+Deck+v0.3) -->
 
-## ✨ Highlights in v0.3.0
-
-- per-element animations: choose how each element enters and exits (fade, slides, scale, or none)
-- emote & thumbnail improvements: centered square cropping with rounded corners and a live size slider for fine control
-- marquee for long text: long titles and subtitles scroll smoothly while keeping panel layout stable
-- improved preview experience: stable preview sizing so animations and overflow behave predictably
-- youtube & latest vod improvements: more robust fetching with optional API key and selectable recent videos
-
-these changes focus on polish and usability: better visuals, predictable preview behavior, and improved control over individual elements.
-
----
+_⚠️ Visual coming soon ⚠️_
 
 ## 🚀 Quick Start
 

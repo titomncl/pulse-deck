@@ -19,6 +19,23 @@ A dynamic, customizable streaming overlay built for OBS that runs locally on the
 
 ---
 
+## 🛠️ Immediate Tasks (what to do next)
+
+These are the practical next steps you should do now before pushing and preparing a release package for v0.3.0.
+
+- [ ] Commit & push the latest local changes (include the release scripts and server changes).
+- [ ] Run the app locally and smoke-test the OBS workflow:
+  - Start the server: `npm start` (or `./start_release.sh` after packaging)
+  - Open `http://localhost:3000/customize`, confirm Connect flow and Generate OBS URL work
+  - Paste the generated URL into OBS Browser Source and confirm overlay auto-auths (no Interact required)
+- [ ] Build a release zip locally and verify contents:
+  - `npm run build:release` (this runs `vite build` then `scripts/create_release.sh`)
+  - Inspect `release/pulse-deck-<version>.zip` and unpack to a temp folder
+  - In the unpacked folder run `start_release.sh` (or `.bat` on Windows) and verify the server starts and the UI behaves as above
+- [ ] Push the created release artifact (zip) or tag the repo for the release (e.g., `v0.3.0`) so you can create a release on GitHub later.
+
+These steps will ensure the current local changes are committed, tested, and packaged in a distributable form.
+
 ## ✅ COMPLETED - v0.1.0 (Initial Release)
 
 ### Dynamic Elements System

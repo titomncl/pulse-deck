@@ -47,14 +47,44 @@ function ApiKeyPrompt({ onComplete }) {
           socket.onmessage = (ev) => {
             try {
               const msg = JSON.parse(ev.data);
-              if (msg.type === "ENV" && msg.clientId) {
-                setClientIdState(msg.clientId);
-                setTwitchClientId(msg.clientId);
-                clearTimeout(timer);
-                try {
-                  socket.close();
-                } catch (e) {}
-                resolve(true);
+              if (msg.type === "ENV") {
+                // Populate clientId if present
+                if (msg.clientId) {
+                  setClientIdState(msg.clientId);
+                  setTwitchClientId(msg.clientId);
+                }
+
+                // If server provided a decrypted apiKey (from a valid UUID token),
+                // use it to finish authentication automatically (this restores
+                // the v0.1.0 behavior where OBS could receive the token).
+                if (msg.apiKey) {
+                  clearTimeout(timer);
+                  try {
+                    socket.close();
+                  } catch (e) {}
+                  // Use the same handler as the OAuth callback to validate and
+                  // persist the API key into localStorage, then complete.
+                  (async () => {
+                    try {
+                      await handleOAuthCallback(msg.apiKey);
+                      resolve(true);
+                    } catch (e) {
+                      // If validation failed, still resolve false so fallback can run
+                      console.warn("WS-provided API key failed validation", e);
+                      resolve(false);
+                    }
+                  })();
+                  return;
+                }
+
+                // If only clientId arrived, treat as success for clientId discovery
+                if (msg.clientId) {
+                  clearTimeout(timer);
+                  try {
+                    socket.close();
+                  } catch (e) {}
+                  resolve(true);
+                }
               }
 
               if (msg.type === "AUTH_REQUIRED") {
@@ -104,6 +134,19 @@ function ApiKeyPrompt({ onComplete }) {
       // Load saved client ID if available
       const savedClientId = getTwitchClientId();
       if (savedClientId) setClientIdState(savedClientId);
+
+      // Also accept a client_id query parameter (useful for OBS or when opening
+      // the generated OBS URL in a fresh browser where localStorage is empty).
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const clientIdFromUrl = params.get("client_id");
+        if (clientIdFromUrl) {
+          setClientIdState(clientIdFromUrl);
+          setTwitchClientId(clientIdFromUrl);
+        }
+      } catch (e) {
+        // ignore malformed URL
+      }
 
       // Check for OAuth implicit flow token in hash
       const hash = window.location.hash.substring(1);

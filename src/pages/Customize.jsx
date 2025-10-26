@@ -335,6 +335,10 @@ export default function Customize() {
         body: JSON.stringify({ clientId, apiKey }),
       });
       const data = await res.json();
+      // Use the URL returned by the server. When OBS and the server/WS run
+      // on the same machine, the overlay can authenticate over the WebSocket
+      // using the token and receive the clientId/apiKey there — no need to
+      // append client_id to the URL.
       setObsUrl(data.obsUrl || "");
       setShowObsUrl(true);
     } catch (err) {
