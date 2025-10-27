@@ -92,7 +92,7 @@ export const setItem = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value))
     
     // Dispatch custom event for same-window updates (storage event doesn't fire in same window)
-    if (key === 'overlayConfig') {
+    if (key === STORAGE_KEYS.OVERLAY_CONFIG) {
       window.dispatchEvent(new CustomEvent('configUpdated'))
     }
     
