@@ -10,7 +10,7 @@ import {
   getTwitchApiKey,
   getTwitchClientId,
   getOverlayConfig,
-  setPreviewConfig,
+  setPreviewConfig as setPreviewConfigStorage,
   applyPreviewConfig,
   getPreviewConfig,
   resetToDefault,
@@ -113,12 +113,55 @@ export default function Customize() {
     fetchReal();
   }, [authState]);
 
+  // Fetch YouTube preview data (latest video) when preview config or selected element changes
+  useEffect(() => {
+    const fetchYoutubePreview = async () => {
+      if (!previewConfig) return;
+
+      const channelId = previewConfig.youtube?.channelId || previewConfig.youtubeChannel?.channelId;
+      if (!channelId) return;
+
+      // Determine which video index to request. If a selected element requests a specific
+      // youtubeVideoIndex use that, otherwise default to 0 (latest).
+      let videoIndex = 0;
+      if (selectedEl && selectedEl.dataSource === "youtube.latest") {
+        videoIndex = selectedEl.fields?.youtubeVideoIndex || 0;
+      }
+
+      setLoadingYoutubeData(true);
+      try {
+        const apiKey = previewConfig.youtube?.apiKey || "";
+        const url = `/api/youtube/latest-video?channelId=${encodeURIComponent(channelId)}${
+          apiKey ? `&apiKey=${encodeURIComponent(apiKey)}` : ""
+        }&videoIndex=${encodeURIComponent(videoIndex)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data && !data.error) {
+          setYoutubeData({ latest: data });
+        } else {
+          console.warn("YouTube preview fetch error:", data.error || data);
+          setYoutubeData({ latest: { text: "No video found", subtext: "", thumbnail: null } });
+        }
+      } catch (err) {
+        console.warn("YouTube preview fetch failed:", err);
+        setYoutubeData({ latest: { text: "No video found", subtext: "", thumbnail: null } });
+      } finally {
+        setLoadingYoutubeData(false);
+      }
+    };
+
+    fetchYoutubePreview();
+    // Refresh every 5 minutes while on customize page
+    const interval = setInterval(fetchYoutubePreview, 300000);
+    return () => clearInterval(interval);
+  }, [previewConfig?.youtube?.channelId, previewConfig?.youtube?.apiKey, selectedElement, previewConfig]);
+
   // Helpers to update preview config
   const setPreviewConfig = (newConfig) => {
     try {
       setPreviewConfigState(newConfig);
       // persist to local storage via config helper
-      setPreviewConfig(newConfig);
+      setPreviewConfigStorage(newConfig);
     } catch (e) {
       // ignore
     }
