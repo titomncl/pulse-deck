@@ -35,6 +35,24 @@ export default function ElementEditor({
         <small>Changes how this element displays content</small>
       </div>
 
+      {/* Data Source (moved below Element Type for improved UX) */}
+      <div className="control-group">
+        <label>Data Source</label>
+        <select
+          value={element.dataSource || "none"}
+          onChange={(e) => updatePreviewElement(element.id, { dataSource: e.target.value })}
+        >
+          <option value="none">Manual / None</option>
+          <option value="twitch.followers">Twitch Followers</option>
+          <option value="twitch.subscribers">Twitch Subscribers</option>
+          <option value="twitch.vods">Twitch VODs</option>
+          <option value="youtube.latest">YouTube Latest</option>
+          <option value="custom.donations">Custom: Donations</option>
+          <option value="config.chatCommands">Config: Chat Commands</option>
+        </select>
+        <small>Choose where this element reads its data from. "Manual / None" uses the fields below.</small>
+      </div>
+
       {/* Title */}
       <div className="control-group">
         <label>Title</label>
