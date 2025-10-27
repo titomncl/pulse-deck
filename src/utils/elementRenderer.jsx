@@ -261,7 +261,10 @@ export const getElementData = (element, allData, config) => {
   }
 
   if (dataSource.startsWith("youtube.")) {
-    const youtubeKey = dataSource.replace("youtube.", "");
+    let youtubeKey = dataSource.replace("youtube.", "");
+    // Backwards-compat: older configs used 'youtube.latestVideo' key
+    // Map it to the current 'latest' key used by the display code
+    if (youtubeKey === "latestVideo") youtubeKey = "latest";
     return allData?.youtube?.[youtubeKey] || {};
   }
 
