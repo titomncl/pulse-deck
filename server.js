@@ -101,6 +101,14 @@ const verifyConfigWriteAccess = (req, res, next) => {
       const raw = await fsp.readFile(CONFIG_FILE, "utf-8");
       overlayConfig = JSON.parse(raw);
       console.log("✅ Loaded existing config from file");
+    } else {
+      // if no config file, copy from default
+      if (fs.existsSync(DEFAULT_CONFIG_FILE)) {
+        const defaultRaw = await fsp.readFile(DEFAULT_CONFIG_FILE, "utf-8");
+        overlayConfig = JSON.parse(defaultRaw);
+        await fsp.writeFile(CONFIG_FILE, JSON.stringify(overlayConfig, null, 2), "utf-8");
+        console.log("✅ No config found, bootstrapped from default config");
+      }
     }
   } catch (err) {
     console.warn("⚠️  Could not load config file:", err.message);
