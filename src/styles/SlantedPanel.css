@@ -9,11 +9,11 @@
 
 .slanted-panel {
   /* Minimum dimensions - can grow with content but stays steady during transitions */
-  min-width: 700px;
-  min-height: 220px;
-  width: fit-content;
-  height: fit-content;
-  max-width: 100%;
+  width: 700px;
+  height: 220px;
+  /* width: fit-content; */
+  /* height: fit-content; */
+  /* max-width: 100%; */
   
   /* Diamond/Losange shape - parallelogram with rounded corners */
   background: #F3F3F3; /* Light grey background */
