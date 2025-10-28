@@ -594,7 +594,7 @@ async function handleYouTubeRSS(channelId, videoIndex, res) {
 
     res.json({
       text: title,
-      subtext: `Published ${publishedAt} (Note: May include Shorts - add API key to filter)`,
+      subtext: `Published ${publishedAt}`,
       thumbnail: thumbnail,
       url: url,
       videoId: videoId,
