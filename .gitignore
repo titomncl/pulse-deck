@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 auth-tokens.json
+overlay-config.json
+user-default-config.json
 .env
 .env.*.local
 
