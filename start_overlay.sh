@@ -35,7 +35,22 @@ if [ ! -f .env ]; then
     fi
 fi
 
-# ── 2. Prompt for Twitch Client ID if missing ────────────────────────────────
+# ── 2. Sync APP_VERSION from package.json → detect rebuild needed ────────────
+PKG_VERSION=$(grep -m1 '"version"' package.json | cut -d'"' -f4)
+ENV_VERSION=$(grep -E '^APP_VERSION=' .env | cut -d'=' -f2- | tr -d '[:space:]')
+
+if [ -z "$ENV_VERSION" ]; then
+    echo "APP_VERSION=${PKG_VERSION}" >> .env
+    echo "✅ Stored version ${PKG_VERSION} in .env"
+elif [ "$ENV_VERSION" != "$PKG_VERSION" ]; then
+    sed -i "s|^APP_VERSION=.*|APP_VERSION=${PKG_VERSION}|" .env
+    echo "🔄 Version changed (${ENV_VERSION} → ${PKG_VERSION}), rebuild required"
+    NEED_BUILD=true
+else
+    echo "✅ Version ${PKG_VERSION} matches .env"
+fi
+
+# ── 3. Prompt for Twitch Client ID if missing ────────────────────────────────
 NEED_BUILD=false
 CURRENT_CLIENT_ID=$(grep -E '^VITE_TWITCH_CLIENT_ID=' .env | cut -d'=' -f2- | tr -d '[:space:]')
 
@@ -70,7 +85,7 @@ else
     echo "✅ Twitch Client ID found in .env"
 fi
 
-# ── 3. Install dependencies if needed ───────────────────────────────────────
+# ── 4. Install dependencies if needed ───────────────────────────────────────
 if [ ! -d "node_modules" ]; then
     echo "First time setup detected!"
     echo "Installing dependencies... This may take a few minutes."
@@ -81,7 +96,7 @@ if [ ! -d "node_modules" ]; then
     echo ""
 fi
 
-# ── 4. Build if needed ───────────────────────────────────────────────────────
+# ── 5. Build if needed ───────────────────────────────────────────────────────
 if [ ! -d "dist" ] || [ "$NEED_BUILD" = true ]; then
     echo ""
     echo "Building frontend (this bakes the Client ID into the bundle)..."
@@ -94,7 +109,7 @@ if [ ! -d "dist" ] || [ "$NEED_BUILD" = true ]; then
     echo "✅ Build complete"
 fi
 
-# ── 5. Start server ──────────────────────────────────────────────────────────
+# ── 6. Start server ──────────────────────────────────────────────────────────
 npm start
 
 # Keep terminal open on error
