@@ -24,7 +24,53 @@ echo ""
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$DIR"
 
-# Check if node_modules exists
+# ── 1. Ensure .env exists ────────────────────────────────────────────────────
+if [ ! -f .env ]; then
+    if [ -f .env.example ]; then
+        cp .env.example .env
+        echo "Created .env from .env.example."
+    else
+        echo "Warning: .env.example not found. Creating empty .env"
+        touch .env
+    fi
+fi
+
+# ── 2. Prompt for Twitch Client ID if missing ────────────────────────────────
+NEED_BUILD=false
+CURRENT_CLIENT_ID=$(grep -E '^VITE_TWITCH_CLIENT_ID=' .env | cut -d'=' -f2- | tr -d '[:space:]')
+
+if [ -z "$CURRENT_CLIENT_ID" ]; then
+    echo ""
+    echo "┌─────────────────────────────────────────────┐"
+    echo "│  Twitch Client ID not found in .env         │"
+    echo "│                                             │"
+    echo "│  1. Go to https://dev.twitch.tv/console     │"
+    echo "│  2. Register or open your application       │"
+    echo "│  3. Copy the Client ID shown on the page    │"
+    echo "└─────────────────────────────────────────────┘"
+    echo ""
+    read -r -p "Enter your Twitch Client ID: " INPUT_CLIENT_ID
+    INPUT_CLIENT_ID="$(echo "$INPUT_CLIENT_ID" | tr -d '[:space:]')"
+
+    if [ -z "$INPUT_CLIENT_ID" ]; then
+        echo "[ERROR] No Client ID entered. Aborting."
+        read -p "Press Enter to exit..."
+        exit 1
+    fi
+
+    # Append or update the key in .env
+    if grep -qE '^VITE_TWITCH_CLIENT_ID=' .env; then
+        sed -i "s|^VITE_TWITCH_CLIENT_ID=.*|VITE_TWITCH_CLIENT_ID=${INPUT_CLIENT_ID}|" .env
+    else
+        echo "VITE_TWITCH_CLIENT_ID=${INPUT_CLIENT_ID}" >> .env
+    fi
+    echo "✅ Client ID saved to .env"
+    NEED_BUILD=true
+else
+    echo "✅ Twitch Client ID found in .env"
+fi
+
+# ── 3. Install dependencies if needed ───────────────────────────────────────
 if [ ! -d "node_modules" ]; then
     echo "First time setup detected!"
     echo "Installing dependencies... This may take a few minutes."
@@ -35,19 +81,20 @@ if [ ! -d "node_modules" ]; then
     echo ""
 fi
 
-# Check if a production build is present; if not, run npx vite build
-if [ ! -d "dist" ]; then
-    echo "Build folder not found. Running 'npx vite build'..."
-    npx vite build
+# ── 4. Build if needed ───────────────────────────────────────────────────────
+if [ ! -d "dist" ] || [ "$NEED_BUILD" = true ]; then
+    echo ""
+    echo "Building frontend (this bakes the Client ID into the bundle)..."
+    npm run build
     if [ $? -ne 0 ]; then
         echo "[ERROR] Build failed"
         read -p "Press Enter to exit..."
         exit 1
     fi
-    echo "Build complete"
+    echo "✅ Build complete"
 fi
 
-# Start the server
+# ── 5. Start server ──────────────────────────────────────────────────────────
 npm start
 
 # Keep terminal open on error
