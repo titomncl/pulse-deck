@@ -3,7 +3,7 @@ import SlantedPanel from '../components/SlantedPanel'
 import ApiKeyPrompt from '../components/ApiKeyPrompt'
 import TokenValidationPrompt from '../components/TokenValidationPrompt'
 import LoadingScreen from '../components/LoadingScreen'
-import { getTwitchApiKey, getTwitchClientId, getOverlayConfig, setTwitchClientId, setTwitchApiKey } from '../config'
+import { getTwitchApiKey, getTwitchClientId, getOverlayConfig, setTwitchClientId, setTwitchApiKey, clearTwitchApiKey } from '../config'
 import { getFollowerCount, getSubscriberCount, validateToken, configWebSocket, fetchConfig } from '../api'
 import { renderElement, getElementData, migrateOldConfig } from '../utils/elementRenderer.jsx'
 import axios from 'axios'
@@ -55,6 +55,10 @@ function Display() {
         
         if (validation.valid) {
           setAuthState('authenticated')
+        } else if (['INVALID_TOKEN', 'INSUFFICIENT_SCOPES', 'CLIENT_ID_MISMATCH'].includes(validation.error)) {
+          // Stale/wrong token — clear it so the user lands on "Connect with Twitch"
+          clearTwitchApiKey()
+          setAuthState('needs-auth')
         } else {
           setTokenValidation(validation)
           setAuthState('error')

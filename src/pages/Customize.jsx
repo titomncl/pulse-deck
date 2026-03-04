@@ -9,6 +9,7 @@ import SettingsPanel from "../components/Customize/SettingsPanel";
 import {
   getTwitchApiKey,
   getTwitchClientId,
+  clearTwitchApiKey,
   getOverlayConfig,
   setPreviewConfig as setPreviewConfigStorage,
   applyPreviewConfig,
@@ -60,8 +61,13 @@ export default function Customize() {
           return;
         }
         const validation = await validateToken();
-        if (validation?.valid) setAuthState("authenticated");
-        else {
+        if (validation?.valid) {
+          setAuthState("authenticated");
+        } else if (['INVALID_TOKEN', 'INSUFFICIENT_SCOPES', 'CLIENT_ID_MISMATCH'].includes(validation?.error)) {
+          // Stale/wrong token — clear it so the user lands on "Connect with Twitch"
+          clearTwitchApiKey();
+          setAuthState("needs-auth");
+        } else {
           setTokenValidation(validation);
           setAuthState("error");
         }

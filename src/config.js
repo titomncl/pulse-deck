@@ -117,6 +117,7 @@ export const removeItem = (key) => {
 // Twitch API credentials
 export const getTwitchApiKey = () => getItem(STORAGE_KEYS.TWITCH_API_KEY)
 export const setTwitchApiKey = (key) => setItem(STORAGE_KEYS.TWITCH_API_KEY, key)
+export const clearTwitchApiKey = () => removeItem(STORAGE_KEYS.TWITCH_API_KEY)
 
 export const getTwitchClientId = () => getItem(STORAGE_KEYS.TWITCH_CLIENT_ID)
 export const setTwitchClientId = (clientId) => setItem(STORAGE_KEYS.TWITCH_CLIENT_ID, clientId)
