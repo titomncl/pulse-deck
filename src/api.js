@@ -39,7 +39,7 @@ export const updateConfig = async (config) => {
 // WEBSOCKET (Real-time Config Updates)
 // ============================================================================
 
-const WS_URL = 'ws://localhost:3001'
+const WS_URL = 'ws://localhost:5001'
 
 class ConfigWebSocket {
   constructor() {

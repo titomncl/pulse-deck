@@ -31,13 +31,13 @@ function Display() {
       const uuidToken = urlParams.get('token')
       
       try {
-        // If UUID token exists, fetch credentials from server
+        // If UUID token exists, validate it exists on the server.
+        // Credentials are NOT returned by this endpoint (by design) — they
+        // are delivered via the WebSocket AUTH flow in ApiKeyPrompt.
         if (uuidToken) {
-          console.log('🔐 Loading credentials from server...')
-          const response = await axios.get(`/api/auth/${uuidToken}`)
-          setTwitchClientId(response.data.clientId)
-          setTwitchApiKey(response.data.apiKey)
-          console.log('✅ Credentials loaded')
+          console.log('🔐 Validating token with server...')
+          await axios.get(`/api/auth/${uuidToken}`)
+          console.log('✅ Token is valid, credentials will load via WebSocket')
         }
         
         // Check if we have credentials (either just loaded or from localStorage)

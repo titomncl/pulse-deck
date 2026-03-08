@@ -11,6 +11,7 @@ import {
   getTwitchClientId,
   clearTwitchApiKey,
   getOverlayConfig,
+  setOverlayConfig,
   setPreviewConfig as setPreviewConfigStorage,
   applyPreviewConfig,
   getPreviewConfig,
@@ -19,7 +20,7 @@ import {
   resetToFactoryDefault,
   resetToUserDefault,
 } from "../config";
-import { validateToken, getFollowerCount, getSubscriberCount, updateConfig } from "../api";
+import { validateToken, getFollowerCount, getSubscriberCount, updateConfig, fetchConfig } from "../api";
 import { migrateOldConfig } from "../utils/elementRenderer.jsx";
 import "../styles/Customize.css";
 
@@ -82,7 +83,16 @@ export default function Customize() {
   // Load config & emotes
   useEffect(() => {
     const load = async () => {
-      const overlayConfig = migrateOldConfig(getOverlayConfig() || {});
+      // Server file is the source of truth; fall back to localStorage only if server returns nothing
+      const serverConfig = await fetchConfig();
+      const base = serverConfig && Object.keys(serverConfig).length > 0
+        ? serverConfig
+        : getOverlayConfig() || {};
+      const overlayConfig = migrateOldConfig(base);
+      // Keep localStorage in sync with the server version
+      if (serverConfig && Object.keys(serverConfig).length > 0) {
+        setOverlayConfig(overlayConfig);
+      }
       setConfig(overlayConfig);
       const preview = getPreviewConfig();
       setPreviewConfigState(preview ? migrateOldConfig(preview) : JSON.parse(JSON.stringify(overlayConfig)));

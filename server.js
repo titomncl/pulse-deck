@@ -14,8 +14,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const WS_PORT = process.env.WS_PORT || 3001;
+const PORT = process.env.PORT || 5000;
+const WS_PORT = process.env.WS_PORT || 5001;
 
 // Runtime configuration (can be set in .env)
 const ALLOW_REMOTE_CONFIG_WRITES = process.env.ALLOW_REMOTE_CONFIG_WRITES === "true";

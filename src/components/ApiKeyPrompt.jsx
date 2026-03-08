@@ -21,7 +21,7 @@ function ApiKeyPrompt({ onComplete }) {
       return new Promise((resolve) => {
         try {
           const host = window.location.hostname || "localhost";
-          const port = import.meta?.env?.VITE_WS_PORT || 3001;
+          const port = import.meta?.env?.VITE_WS_PORT || 5001;
           const protocol = window.location.protocol === "https:" ? "wss" : "ws";
           const url = `${protocol}://${host}:${port}`;
           const socket = new WebSocket(url);
@@ -30,7 +30,7 @@ function ApiKeyPrompt({ onComplete }) {
               socket.close();
             } catch (e) {}
             resolve(false);
-          }, 1500);
+          }, 3000);
 
           socket.onopen = () => {
             socket.send(JSON.stringify({ type: "HELLO", role: "obs" }));
@@ -54,9 +54,8 @@ function ApiKeyPrompt({ onComplete }) {
                   setTwitchClientId(msg.clientId);
                 }
 
-                // If server provided a decrypted apiKey (from a valid UUID token),
-                // use it to finish authentication automatically (this restores
-                // the v0.1.0 behavior where OBS could receive the token).
+                // If server provided a decrypted apiKey (from a valid UUID token AUTH response),
+                // use it to finish authentication automatically.
                 if (msg.apiKey) {
                   clearTimeout(timer);
                   try {
@@ -77,7 +76,19 @@ function ApiKeyPrompt({ onComplete }) {
                   return;
                 }
 
-                // If only clientId arrived, treat as success for clientId discovery
+                // If ENV arrived with only clientId (the server's initial trusted-connection
+                // broadcast), and we are expecting an AUTH token response, keep the socket
+                // open so the AUTH reply (which carries the apiKey) can still arrive.
+                try {
+                  const params = new URLSearchParams(window.location.search);
+                  if (params.get("token")) {
+                    // Still waiting for the AUTH response — do NOT close yet.
+                    return;
+                  }
+                } catch (e) {}
+
+                // No token auth pending — treat clientId-only ENV as success for
+                // clientId discovery and close.
                 if (msg.clientId) {
                   clearTimeout(timer);
                   try {
@@ -87,7 +98,7 @@ function ApiKeyPrompt({ onComplete }) {
                 }
               }
 
-              if (msg.type === "AUTH_REQUIRED") {
+              if (msg.type === "AUTH_REQUIRED" || msg.type === "ERROR") {
                 clearTimeout(timer);
                 try {
                   socket.close();
